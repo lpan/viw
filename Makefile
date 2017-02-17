@@ -20,4 +20,4 @@ mem:
 test:
 	@$(CC) $(FLAGS) src/state.c src/editor.c tests/state-test.c -o test
 	valgrind --leak-check=yes ./test
-	rm test
+	@rm test
