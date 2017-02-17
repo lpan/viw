@@ -21,6 +21,7 @@ void init_editor(char *filename) {
     }
 
     free(line);
+    line = NULL;
     fclose(fp);
   }
 

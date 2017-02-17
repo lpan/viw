@@ -20,6 +20,7 @@ void init_state(char *filename) {
 void destroy_row(row_t *r) {
   free(r->buffer);
   free(r);
+  r = NULL;
 }
 
 void destroy_state(void) {
@@ -27,14 +28,15 @@ void destroy_state(void) {
   while (r) {
     tmp = r;
     r = r->next;
-    free(tmp);
+    destroy_row(tmp);
   }
 
   free(g_state);
+  g_state = NULL;
 }
 
 void insert_row(char *buffer, size_t row_i) {
-  // append newline one at a time
+  // append row one at a time
   assert(row_i < g_state->num_rows + 1);
 
   row_t *r = malloc(sizeof(row_t));
@@ -80,4 +82,37 @@ void insert_row(char *buffer, size_t row_i) {
 }
 
 void delete_row(size_t row_i) {
+  assert(row_i < g_state->num_rows);
+  row_t *to_delete;
+
+  // we always want one line in buffer
+  if (g_state->num_rows == 1) {
+    g_state->current->buffer = NULL;
+    return;
+  }
+
+  if (row_i == 0) {
+    to_delete = g_state->head;
+    g_state->head = g_state->head->next;
+    g_state->head->prev = NULL;
+  } else if (row_i == g_state->num_rows - 1) {
+    to_delete = g_state->last;
+    g_state->last = g_state->last->prev;
+    g_state->last->next = NULL;
+  } else {
+    row_t *prev = g_state->head, *next;
+
+    // we are sure that row_i < num_rows - 1
+    for (size_t i = 0; i < row_i - 1; i ++) {
+      prev = prev->next;
+    }
+    to_delete = prev->next;
+
+    next = prev->next->next;
+    prev->next = next;
+    next->prev = prev;
+  }
+
+  g_state->num_rows --;
+  destroy_row(to_delete);
 }
