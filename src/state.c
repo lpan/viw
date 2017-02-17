@@ -91,6 +91,15 @@ void delete_row(size_t row_i) {
     return;
   }
 
+  // reset current if it is deleted
+  if (row_i == g_state->current->index) {
+    if (g_state->current->next) {
+      g_state->current = g_state->current->next;
+    } else {
+      g_state->current = g_state->current->prev;
+    }
+  }
+
   if (row_i == 0) {
     to_delete = g_state->head;
     g_state->head = g_state->head->next;
