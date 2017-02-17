@@ -1,5 +1,7 @@
 ez
+test
 test.txt
+vgcore.*
 
 # Object files
 *.o
