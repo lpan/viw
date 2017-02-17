@@ -21,26 +21,26 @@ int main(void) {
   const char *filename = "./tests/file.txt";
 
   init_editor(filename);
-  assert(strcmp(g_state->current->buffer, "five\n") == 0);
+  assert(strcmp(g_state->current->buffer, "five") == 0);
 
   // move cursor up
   up_row();
   up_row();
-  assert(strcmp(g_state->current->buffer, "three\n") == 0);
+  assert(strcmp(g_state->current->buffer, "three") == 0);
 
   // delete current row, cursor should be moved to next
   delete_row();
-  assert(strcmp(g_state->current->buffer, "four\n") == 0);
+  assert(strcmp(g_state->current->buffer, "four") == 0);
 
   delete_row();
-  assert(strcmp(g_state->current->buffer, "five\n") == 0);
+  assert(strcmp(g_state->current->buffer, "five") == 0);
 
   delete_row();
-  assert(strcmp(g_state->current->buffer, "two\n") == 0);
+  assert(strcmp(g_state->current->buffer, "two") == 0);
 
   up_row();
   up_row();
-  assert(strcmp(g_state->current->buffer, "zero\n") == 0);
+  assert(strcmp(g_state->current->buffer, "zero") == 0);
 
   // test prepend at start
   prepend_row(strdup("goose"));

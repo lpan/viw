@@ -18,6 +18,11 @@ typedef struct state {
   row_t *head;
   row_t *last;
 
+  // point to the first row displayed
+  row_t *top;
+  // max number of lines we want to display
+  size_t max_rows;
+
   bool is_dirty;
   size_t num_rows;
   const char *filename;
@@ -25,7 +30,7 @@ typedef struct state {
 
 extern state_t *g_state;
 
-void init_state(const char *filename);
+void init_state(const char *filename, size_t max_rows);
 
 void destroy_state(void);
 

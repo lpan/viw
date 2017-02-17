@@ -6,7 +6,8 @@
 
 void init_editor(const char *filename) {
   // init global state
-  init_state(filename);
+  // TODO: get max_rows from terminal height
+  init_state(filename, 10);
 
   // read file to memory
   FILE *fp = fopen(filename, "r");
@@ -15,6 +16,8 @@ void init_editor(const char *filename) {
     size_t len = 0;
 
     for (size_t i = 0; getline(&line, &len, fp) != -1; i++) {
+      // trim newline char
+      line[strcspn(line, "\n")] = 0;
       append_row(strdup(line));
     }
 

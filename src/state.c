@@ -4,17 +4,22 @@
 
 state_t *g_state;
 
-void init_state(const char *filename) {
+void init_state(const char *filename, size_t max_rows) {
   g_state = malloc(sizeof(state_t));
 
   g_state->cx = 0;
   g_state->cy = 0;
-  g_state->num_rows = 0;
+
   g_state->is_dirty = false;
   g_state->filename = filename;
-  g_state->current = NULL;
+
+  g_state->num_rows = 0;
   g_state->head = NULL;
   g_state->last = NULL;
+  g_state->current = NULL;
+
+  g_state->top = NULL;
+  g_state->max_rows = max_rows;
 }
 
 static void destroy_row(row_t *r) {
@@ -135,6 +140,7 @@ void update_row(char *new_buffer) {
 void up_row(void) {
   if (g_state->current->prev) {
     g_state->current = g_state->current->prev;
+    g_state->cy --;
   }
 }
 
@@ -142,5 +148,6 @@ void up_row(void) {
 void down_row(void) {
   if (g_state->current->next) {
     g_state->current = g_state->current->next;
+    g_state->cy ++;
   }
 }
