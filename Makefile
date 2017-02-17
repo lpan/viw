@@ -1,7 +1,9 @@
 CC=gcc
+FLAGS=--std=c99
 
-ez: src/main.c
-	$(CC) src/main.c -o ez
+run: src/*.c
+	@$(CC) $(FLAGS) src/*.c -o ez
+	@./ez test.txt
 
 clean:
 	rm -f ez *~
