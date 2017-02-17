@@ -6,7 +6,7 @@
 #include "../src/editor.h"
 
 int main(void) {
-  char *filename = "./tests/file.txt";
+  const char *filename = "./tests/file.txt";
 
   init_editor(filename);
   assert(strcmp(g_state->current->buffer, "five\n") == 0);

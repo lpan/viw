@@ -20,13 +20,13 @@ typedef struct state {
   row_t *last;
 
   bool is_dirty;
-  char *filename;
   size_t num_rows;
+  const char *filename;
 } state_t;
 
 extern state_t *g_state;
 
-void init_state(char *filename);
+void init_state(const char *filename);
 
 void destroy_state(void);
 

@@ -4,7 +4,7 @@
 
 state_t *g_state;
 
-void init_state(char *filename) {
+void init_state(const char *filename) {
   g_state = malloc(sizeof(state_t));
 
   g_state->cx = 0;

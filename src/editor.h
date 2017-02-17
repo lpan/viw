@@ -1,7 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-void init_editor(char *filename);
+void init_editor(const char *filename);
 
 void destroy_editor(void);
 

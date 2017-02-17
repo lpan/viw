@@ -4,7 +4,7 @@
 #include "editor.h"
 #include "state.h"
 
-void init_editor(char *filename) {
+void init_editor(const char *filename) {
   // init global state
   init_state(filename);
 
