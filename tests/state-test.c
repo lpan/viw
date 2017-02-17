@@ -13,32 +13,48 @@ static void printBuffer(void) {
   }
 }
 
+static void printCurrent(void) {
+  printf("%s\n", g_state->current->buffer);
+}
+
 int main(void) {
   const char *filename = "./tests/file.txt";
 
   init_editor(filename);
   assert(strcmp(g_state->current->buffer, "five\n") == 0);
 
-  delete_row(5);
+  // move cursor up
+  up_row();
+  up_row();
+  assert(strcmp(g_state->current->buffer, "three\n") == 0);
+
+  // delete current row, cursor should be moved to next
+  delete_row();
   assert(strcmp(g_state->current->buffer, "four\n") == 0);
 
-  delete_row(0);
-  assert(strcmp(g_state->current->buffer, "four\n") == 0);
-  assert(strcmp(g_state->head->buffer, "one\n") == 0);
+  delete_row();
+  assert(strcmp(g_state->current->buffer, "five\n") == 0);
 
-  insert_row(strdup("lmao"), 0);
-  assert(strcmp(g_state->current->buffer, "lmao") == 0);
-  assert(strcmp(g_state->head->buffer, "lmao") == 0);
+  delete_row();
+  assert(strcmp(g_state->current->buffer, "two\n") == 0);
 
-  insert_row(strdup("goose"), 5);
+  up_row();
+  up_row();
+  assert(strcmp(g_state->current->buffer, "zero\n") == 0);
+
+  // test prepend at start
+  prepend_row(strdup("goose"));
   assert(strcmp(g_state->current->buffer, "goose") == 0);
-  assert(strcmp(g_state->last->buffer, "goose") == 0);
+  assert(strcmp(g_state->head->buffer, "goose") == 0);
 
-  insert_row(strdup("paninos"), 3);
+  down_row();
+  down_row();
+  down_row();
+
+  // test append at last
+  append_row(strdup("paninos"));
   assert(strcmp(g_state->current->buffer, "paninos") == 0);
-  assert(g_state->current->index == 3);
-  delete_row(3);
-  assert(g_state->current->index == 2);
+  assert(strcmp(g_state->last->buffer, "paninos") == 0);
 
   destroy_editor();
 

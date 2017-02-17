@@ -15,7 +15,7 @@ void init_editor(const char *filename) {
     size_t len = 0;
 
     for (size_t i = 0; getline(&line, &len, fp) != -1; i++) {
-      insert_row(strdup(line), i);
+      append_row(strdup(line));
     }
 
     free(line);
@@ -25,7 +25,7 @@ void init_editor(const char *filename) {
 
   // insert empty row if file is empty or doesn't exist
   if (!g_state->current) {
-    insert_row(NULL, 0);
+    append_row(NULL);
   }
 }
 

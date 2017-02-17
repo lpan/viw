@@ -17,7 +17,7 @@ void init_state(const char *filename) {
   g_state->last = NULL;
 }
 
-void destroy_row(row_t *r) {
+static void destroy_row(row_t *r) {
   free(r->buffer);
   free(r);
   r = NULL;
@@ -35,68 +35,72 @@ void destroy_state(void) {
   g_state = NULL;
 }
 
-// O(1) insert head, tail, current+=1; O(n) otherwise
-void insert_row(char *buffer, size_t row_i) {
-  // append row one at a time
-  assert(row_i < g_state->num_rows + 1);
-
+// insert row after current
+void append_row(char *buffer) {
   row_t *r = malloc(sizeof(row_t));
+  row_t *prev = NULL;
+  row_t *next = NULL;
+
   r->buffer = buffer;
-  r->index = row_i;
   r->next = NULL;
   r->prev = NULL;
 
-  // handle empty file
   if (g_state->num_rows == 0) {
     g_state->head = r;
     g_state->last= r;
-    g_state->num_rows ++;
-    g_state->current = r;
-    return;
-  }
-
-  // num_rows >= 1
-  if (row_i == 0) {
-    r->next = g_state->head;
-    g_state->head->prev = r;
-    g_state->head = r;
-  } else if (row_i == g_state->num_rows) {
-    r->prev = g_state->last;
-    g_state->last->next = r;
+  } else if (g_state->current == g_state->last) {
+    prev = g_state->current;
+    prev->next = r;
     g_state->last = r;
   } else {
-    // insert at neither head or tail
-    row_t *prev, *next;
-
-    if (row_i == g_state->current->index - 1) {
-      prev = g_state->current->prev;
-      next = g_state->current;
-    } else if (row_i == g_state->current->index + 1) {
-      prev = g_state->current;
-      next = g_state->current->next;
-    } else {
-      prev = g_state->head;
-
-      for (size_t i = 0; i < row_i - 1; i ++) {
-        prev = prev->next;
-      }
-      next = prev->next;
-    }
-
-    r->next = next;
-    r->prev = prev;
+    prev = g_state->current;
+    next = g_state->current->next;
     prev->next = r;
     next->prev = r;
   }
+
+  r->next = next;
+  r->prev = prev;
 
   g_state->num_rows ++;
   g_state->current = r;
 }
 
-// O(1) delete head, tail or current; O(n) otherwise
-void delete_row(size_t row_i) {
-  assert(row_i < g_state->num_rows);
-  row_t *to_delete;
+// insert row before current
+void prepend_row(char *buffer) {
+  row_t *r = malloc(sizeof(row_t));
+  row_t *prev = NULL;
+  row_t *next = NULL;
+
+  r->buffer = buffer;
+  r->next = NULL;
+  r->prev = NULL;
+
+  if (g_state->num_rows == 0) {
+    g_state->head = r;
+    g_state->last= r;
+  } else if (g_state->current == g_state->head) {
+    next = g_state->current;
+    next->prev = r;
+    g_state->head = r;
+  } else {
+    prev = g_state->current->prev;
+    next = g_state->current;
+    prev->next = r;
+    next->prev = r;
+  }
+
+  r->next = next;
+  r->prev = prev;
+
+  g_state->num_rows ++;
+  g_state->current = r;
+}
+
+// delete current row
+void delete_row(void) {
+  assert(g_state->num_rows > 0);
+  row_t *to_delete = g_state->current;
 
   // we always want one line in buffer
   if (g_state->num_rows == 1) {
@@ -104,45 +108,39 @@ void delete_row(size_t row_i) {
     return;
   }
 
-  if (row_i == 0) {
-    to_delete = g_state->head;
-    g_state->head = g_state->head->next;
-    g_state->head->prev = NULL;
-
-    if (row_i == g_state->current->index) {
-      g_state->current = g_state->head;
-    }
-  } else if (row_i == g_state->num_rows - 1) {
-    to_delete = g_state->last;
-    g_state->last = g_state->last->prev;
-    g_state->last->next = NULL;
-
-    if (row_i == g_state->current->index) {
-      g_state->current = g_state->last;
-    }
-  } else if (row_i == g_state->current->index) {
-    to_delete = g_state->current;
+  if (to_delete == g_state->head) {
+    g_state->current = to_delete->next;
+    g_state->current->prev = NULL;
+    g_state->head = g_state->current;;
+  } else if (to_delete == g_state->last) {
+    g_state->current = to_delete->prev;
+    g_state->current->next = NULL;
+    g_state->last = g_state->current;;
+  } else {
     to_delete->prev->next = to_delete->next;
     to_delete->next->prev = to_delete->prev;
-    g_state->current = to_delete->prev;
-  } else {
-    row_t *prev = g_state->head, *next;
-
-    // we are sure that row_i < num_rows - 1
-    for (size_t i = 0; i < row_i - 1; i ++) {
-      prev = prev->next;
-    }
-    to_delete = prev->next;
-
-    next = prev->next->next;
-    prev->next = next;
-    next->prev = prev;
+    g_state->current = to_delete->next;
   }
 
   g_state->num_rows --;
   destroy_row(to_delete);
 }
 
-void update_row(size_t row_i) {
-  assert(row_i < g_state->num_rows);
+// update current row
+void update_row(char *new_buffer) {
+  g_state->current->buffer = new_buffer;
+}
+
+// move up
+void up_row(void) {
+  if (g_state->current->prev) {
+    g_state->current = g_state->current->prev;
+  }
+}
+
+// move down
+void down_row(void) {
+  if (g_state->current->next) {
+    g_state->current = g_state->current->next;
+  }
 }

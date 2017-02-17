@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 typedef struct row {
-  size_t index;
   char *buffer;
   struct row *prev;
   struct row *next;
@@ -30,8 +29,16 @@ void init_state(const char *filename);
 
 void destroy_state(void);
 
-void insert_row(char *buffer, size_t index);
+void append_row(char *buffer);
 
-void delete_row(size_t index);
+void prepend_row(char *buffer);
+
+void delete_row(void);
+
+void update_row(char *new_buffer);
+
+void up_row(void);
+
+void down_row(void);
 
 #endif
