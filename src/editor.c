@@ -16,18 +16,18 @@ void init_editor(char *filename) {
     char *line = NULL;
     size_t len = 0;
 
-    while (getline(&line, &len, fp) != -1) {
-      add_row(strdup(line), len);
-      printf("%s", line);
+    for (size_t i = 0; getline(&line, &len, fp) != -1; i++) {
+      insert_row(strdup(line), i);
     }
 
     free(line);
-  } else {
-    // add an empty row if file does not exist
-    add_row(NULL, 0);
+    fclose(fp);
   }
 
-  fclose(fp);
+  // insert empty row if file is empty or doesn't exist
+  if (!g_state->current) {
+    insert_row(NULL, 0);
+  }
 }
 
 void destroy_editor(void) {

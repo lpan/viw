@@ -4,27 +4,34 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef struct {
+typedef struct row {
   size_t index;
-  size_t len;
   char *buffer;
-} row;
+  struct row *prev;
+  struct row *next;
+} row_t;
 
-typedef struct {
+typedef struct state {
   size_t cx;
   size_t cy;
+
+  row_t *current;
+  row_t *head;
+  row_t *last;
+
   bool is_dirty;
   char *filename;
-  row *rows;
   size_t num_rows;
-} editor_state;
+} state_t;
 
-extern editor_state *g_state;
+extern state_t *g_state;
 
 void init_state(char *filename);
 
 void destroy_state(void);
 
-void add_row(char *buffer, size_t len);
+void insert_row(char *buffer, size_t index);
+
+void delete_row(size_t index);
 
 #endif
