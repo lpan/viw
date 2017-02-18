@@ -1,10 +1,12 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ncurses.h>
 #include "state.h"
 
 state_t *g_state;
 
-void init_state(const char *filename, size_t max_rows) {
+void init_state(const char *filename) {
   g_state = malloc(sizeof(state_t));
 
   g_state->cx = 0;
@@ -18,14 +20,17 @@ void init_state(const char *filename, size_t max_rows) {
   g_state->last = NULL;
   g_state->current = NULL;
 
-  g_state->top = NULL;
-  g_state->max_rows = max_rows;
+  g_state->mode = NORMAL;
 }
 
 static void destroy_row(row_t *r) {
-  free(r->buffer);
+  echar_t *c = r->head, *tmp;
+  while (c) {
+    tmp = c;
+    c = c->next;
+    free(tmp);
+  }
   free(r);
-  r = NULL;
 }
 
 void destroy_state(void) {
@@ -40,15 +45,60 @@ void destroy_state(void) {
   g_state = NULL;
 }
 
-// insert row after current
-void append_row(char *buffer) {
-  row_t *r = malloc(sizeof(row_t));
-  row_t *prev = NULL;
-  row_t *next = NULL;
+static void append_char(row_t *r, char c) {
+  echar_t *ec = malloc(sizeof(echar_t));
+  echar_t *next = NULL;
+  echar_t *prev = NULL;
 
-  r->buffer = buffer;
+  ec->c = c;
+  ec->prev = NULL;
+  ec->next = NULL;
+
+  if (r->line_size == 0) {
+    r->head = ec;
+    r->last= ec;
+  } else if (r->current == r->last) {
+    prev = r->current;
+    prev->next = ec;
+    r->last = ec;
+  } else {
+    prev = r->current;
+    next = r->current->next;
+    prev->next = ec;
+    next->prev = ec;
+  }
+
+  ec->next = next;
+  ec->prev = prev;
+
+  r->line_size ++;
+  r->current = ec;
+}
+
+static row_t *init_row(char *buffer) {
+  row_t *r = malloc(sizeof(row_t));
   r->next = NULL;
   r->prev = NULL;
+  r->line_size = 0;
+
+  if (!buffer) {
+    r->current = NULL;
+    r->head = NULL;
+    r->last = NULL;
+    return r;
+  }
+
+  for (size_t i = 0; i < strlen(buffer); i ++) {
+    append_char(r, buffer[i]);
+  }
+  return r;
+}
+
+// insert row after current
+void append_row(char *buffer) {
+  row_t *r = init_row(buffer);
+  row_t *prev = NULL;
+  row_t *next = NULL;
 
   if (g_state->num_rows == 0) {
     g_state->head = r;
@@ -73,13 +123,9 @@ void append_row(char *buffer) {
 
 // insert row before current
 void prepend_row(char *buffer) {
-  row_t *r = malloc(sizeof(row_t));
+  row_t *r = init_row(buffer);
   row_t *prev = NULL;
   row_t *next = NULL;
-
-  r->buffer = buffer;
-  r->next = NULL;
-  r->prev = NULL;
 
   if (g_state->num_rows == 0) {
     g_state->head = r;
@@ -109,7 +155,9 @@ void delete_row(void) {
 
   // we always want one line in buffer
   if (g_state->num_rows == 1) {
-    g_state->current->buffer = NULL;
+    to_delete = g_state->current;
+    g_state->current = init_row(NULL);
+    destroy_row(to_delete);
     return;
   }
 
@@ -131,9 +179,7 @@ void delete_row(void) {
   destroy_row(to_delete);
 }
 
-// update current row
-void update_row(char *new_buffer) {
-  g_state->current->buffer = new_buffer;
+void update_row(char c) {
 }
 
 // move up

@@ -1,11 +1,31 @@
 #ifndef STATE_H
 #define STATE_H
 
+#define LINE_LENGTH 80
+
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ncurses.h>
+
+typedef enum MODE {
+  NORMAL,
+  INSERT,
+  VISUAL,
+  EX
+} MODE;
+
+typedef struct echar {
+  char c;
+  struct echar *prev;
+  struct echar *next;
+} echar_t;
 
 typedef struct row {
-  char *buffer;
+  echar_t *current;
+  echar_t *head;
+  echar_t *last;
+  size_t line_size;
+
   struct row *prev;
   struct row *next;
 } row_t;
@@ -14,14 +34,18 @@ typedef struct state {
   size_t cx;
   size_t cy;
 
+  // insert/normal/visual/ex
+  MODE mode;
+
+  // rows
   row_t *current;
   row_t *head;
   row_t *last;
 
-  // point to the first row displayed
-  row_t *top;
-  // max number of lines we want to display
-  size_t max_rows;
+  // each ncurses window represents a line
+  WINDOW **rows;
+  // display current mode, as well as ex mode commands
+  WINDOW *status_bar;
 
   bool is_dirty;
   size_t num_rows;
@@ -30,7 +54,7 @@ typedef struct state {
 
 extern state_t *g_state;
 
-void init_state(const char *filename, size_t max_rows);
+void init_state(const char *filename);
 
 void destroy_state(void);
 
@@ -40,7 +64,7 @@ void prepend_row(char *buffer);
 
 void delete_row(void);
 
-void update_row(char *new_buffer);
+void update_row(char c);
 
 void up_row(void);
 
