@@ -75,7 +75,7 @@ static void append_char(row_t *r, char c) {
   r->current = ec;
 }
 
-static row_t *init_row(char *buffer) {
+static row_t *init_row(const char *buffer) {
   row_t *r = malloc(sizeof(row_t));
   r->next = NULL;
   r->prev = NULL;
@@ -95,7 +95,7 @@ static row_t *init_row(char *buffer) {
 }
 
 // insert row after current
-void append_row(char *buffer) {
+void append_row(const char *buffer) {
   row_t *r = init_row(buffer);
   row_t *prev = NULL;
   row_t *next = NULL;
@@ -122,7 +122,7 @@ void append_row(char *buffer) {
 }
 
 // insert row before current
-void prepend_row(char *buffer) {
+void prepend_row(const char *buffer) {
   row_t *r = init_row(buffer);
   row_t *prev = NULL;
   row_t *next = NULL;

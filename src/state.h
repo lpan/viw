@@ -58,9 +58,9 @@ void init_state(const char *filename);
 
 void destroy_state(void);
 
-void append_row(char *buffer);
+void append_row(const char *buffer);
 
-void prepend_row(char *buffer);
+void prepend_row(const char *buffer);
 
 void delete_row(void);
 
