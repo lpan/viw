@@ -6,23 +6,6 @@
 
 state_t *g_state;
 
-void init_state(const char *filename) {
-  g_state = malloc(sizeof(state_t));
-
-  g_state->cx = 0;
-  g_state->cy = 0;
-
-  g_state->is_dirty = false;
-  g_state->filename = filename;
-
-  g_state->num_rows = 0;
-  g_state->head = NULL;
-  g_state->last = NULL;
-  g_state->current = NULL;
-
-  g_state->mode = NORMAL;
-}
-
 static void destroy_row(row_t *r) {
   echar_t *c = r->head, *tmp;
   while (c) {
@@ -92,6 +75,62 @@ static row_t *init_row(const char *buffer) {
     append_char(r, buffer[i]);
   }
   return r;
+}
+
+void init_state(const char *filename) {
+  g_state = malloc(sizeof(state_t));
+
+  g_state->cx = 0;
+  g_state->cy = 0;
+
+  g_state->t_cx = 0;
+  g_state->t_cy = 0;
+
+  g_state->is_dirty = false;
+  g_state->filename = filename;
+
+  g_state->num_rows = 0;
+  g_state->status = init_row(NULL);
+  g_state->head = NULL;
+  g_state->last = NULL;
+  g_state->current = NULL;
+
+  g_state->mode = NORMAL;
+}
+
+void add_char(row_t *r, char c) {
+  append_char(r, c);
+  g_state->cx ++;
+}
+
+void delete_char(row_t *r) {
+  if (!r->current) {
+    return;
+  }
+
+  echar_t *to_delete = r->current;
+
+  if (r->line_size == 1) {
+    r->head = NULL;
+    r->last = NULL;
+    r->current = NULL;
+  } else if (to_delete == r->head) {
+    r->current = to_delete->next;
+    r->head = r->current;
+    r->head->prev = NULL;
+  } else if (to_delete == r->last) {
+    r->current = to_delete->prev;
+    r->last = r->current;
+    r->last->next = NULL;
+  } else {
+    r->current = to_delete->prev;
+    r->current->next = to_delete->next;
+    to_delete->next->prev = r->current;
+  }
+
+  g_state->cx --;
+  r->line_size --;
+  free(to_delete);
 }
 
 // insert row after current
@@ -179,7 +218,18 @@ void delete_row(void) {
   destroy_row(to_delete);
 }
 
-void update_row(char c) {
+void clear_row(row_t *r) {
+  echar_t *ec = r->head;
+  while (ec) {
+    echar_t *tmp = ec;
+    ec = ec->next;
+    free(tmp);
+  }
+
+  r->head = NULL;
+  r->last = NULL;
+  r->current = NULL;
+  r->line_size = 0;
 }
 
 static void adjust_x_cursor(void) {

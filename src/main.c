@@ -17,8 +17,7 @@ int main(int argc, char **argv) {
   init_editor(filename);
 
   initial_render();
-
-  start_normal_listener();
+  start_listener();
 
   destroy_editor();
   destroy_screen();

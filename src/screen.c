@@ -24,7 +24,7 @@ static window_t *init_status_window(void) {
   const size_t height = 1, width = COLS;
 
   window_t *status_window = malloc(sizeof(window_t));
-  status_window->w = newwin(height, width, 0, g_screen->num_windows);
+  status_window->w = newwin(height, width, g_screen->num_windows, 0);
   status_window->r = NULL;
 
   return status_window;
@@ -46,7 +46,7 @@ static void destroy_windows(window_t **windows) {
 
 void init_screen(void) {
   initscr();
-  // raw();
+  raw();
   keypad(stdscr, TRUE);
   noecho();
 

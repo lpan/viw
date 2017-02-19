@@ -31,8 +31,8 @@ typedef struct row {
 } row_t;
 
 typedef struct state {
-  size_t cx;
-  size_t cy;
+  size_t cx, cy;
+  size_t t_cx, t_cy;
 
   // insert/normal/visual/ex
   MODE mode;
@@ -54,6 +54,10 @@ void init_state(const char *filename);
 
 void destroy_state(void);
 
+void add_char(row_t *r, char c);
+
+void delete_char(row_t *r);
+
 void append_row(const char *buffer);
 
 void prepend_row(const char *buffer);
@@ -61,6 +65,8 @@ void prepend_row(const char *buffer);
 void delete_row(void);
 
 void update_row(char c);
+
+void clear_row(row_t *r);
 
 void up_row(void);
 

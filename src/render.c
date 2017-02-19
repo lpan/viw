@@ -1,8 +1,11 @@
 #include <ncurses.h>
 #include "state.h"
 #include "screen.h"
+#include "render.h"
 
-static void render_window(WINDOW *w, row_t *r) {
+void render_window(WINDOW *w, row_t *r) {
+  werase(w);
+
   if (!r) {
     wprintw(w, "~");
   } else {
