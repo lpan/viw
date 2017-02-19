@@ -21,12 +21,33 @@ static void exit_ex(void) {
   g_state->t_cy = 0;
 }
 
+static void enter_front_insert(void) {
+  row_t *cur_row = g_state->current;
+
+  // handle an empty row
+  if (cur_row->current->c != '\0') {
+    cur_row->current = cur_row->current->prev;
+  }
+}
+
 static void enter_insert(void) {
-  g_state->cx ++;
+  row_t *cur_row = g_state->current;
+
+  // handle an empty row
+  if (cur_row->current->c != '\0') {
+    g_state->cx ++;
+  }
 }
 
 static void exit_insert(void) {
   g_state->cx --;
+
+  // current node cant be the null char under 'normal' mode
+  row_t *cur_row = g_state->current;
+  if (cur_row->current->c == '\0') {
+    cur_row->current = cur_row->current->next;
+    g_state->cx ++;
+  }
 }
 
 void start_listener(void) {
@@ -69,7 +90,7 @@ void start_normal_listener(void) {
     case 'i':
       // enter insert mode
       g_state->mode = INSERT;
-      enter_insert();
+      enter_front_insert();
       break;
     case 'a':
       // enter insert mode

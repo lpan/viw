@@ -109,6 +109,7 @@ void add_char(row_t *r, char c) {
   g_state->cx ++;
 }
 
+// delete char in normal mode
 void delete_char(row_t *r) {
   if (r->line_size == 0) {
     return;
@@ -135,19 +136,20 @@ void delete_char(row_t *r) {
   free(to_delete);
 }
 
-// delete char with a backspace
+// delete char with a backspace in insert/ex mode
 // only delete before current, delete line if empty
 void backspace_char(row_t *r) {
-  if (r->current == NULL) {
+  if (r->current->c == '\0') {
     // delete line
     return;
   }
 
+  delete_char(r);
+
   if (r->current != r->last) {
     g_state->cx --;
+    r->current = r->current->prev;
   }
-
-  delete_char(r);
 }
 
 // insert row after current
@@ -252,6 +254,13 @@ void clear_row(row_t *r) {
 static void adjust_x_cursor(void) {
   size_t cx = 0;
   row_t *cur_row = g_state->current;
+
+  // for an empty row, cur_row->head->next will be NULL
+  if (!cur_row->head->next) {
+    g_state->cx = cx;
+    return;
+  }
+
   cur_row->current = cur_row->head->next;
 
   for (size_t i = 0;
