@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <ncurses.h>
 
+struct window;
+
 typedef enum MODE {
   NORMAL,
   INSERT,
@@ -25,6 +27,8 @@ typedef struct row {
   echar_t *head;
   echar_t *last;
   size_t line_size;
+
+  struct window *win;
 
   struct row *prev;
   struct row *next;
@@ -57,6 +61,8 @@ void destroy_state(void);
 void add_char(row_t *r, char c);
 
 void delete_char(row_t *r);
+
+void backspace_char(row_t *r);
 
 void append_row(const char *buffer);
 

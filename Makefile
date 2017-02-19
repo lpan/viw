@@ -15,7 +15,7 @@ clean:
 mem:
 	@$(CC) $(FLAGS) src/*.c -o viw
 	valgrind --leak-check=yes ./viw test.txt
-	rm viw
+	@rm viw
 
 test:
 	@$(CC) $(FLAGS) src/state.c src/editor.c tests/state-test.c -o test

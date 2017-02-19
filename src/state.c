@@ -37,10 +37,7 @@ static void append_char(row_t *r, char c) {
   ec->prev = NULL;
   ec->next = NULL;
 
-  if (r->line_size == 0) {
-    r->head = ec;
-    r->last= ec;
-  } else if (r->current == r->last) {
+  if (r->current == r->last) {
     prev = r->current;
     prev->next = ec;
     r->last = ec;
@@ -60,14 +57,23 @@ static void append_char(row_t *r, char c) {
 
 static row_t *init_row(const char *buffer) {
   row_t *r = malloc(sizeof(row_t));
+
+  // null char
+  echar_t *ec = malloc(sizeof(echar_t));
+  ec->c = '\0';
+  ec->prev = NULL;
+  ec->next = NULL;
+
+  r->win = NULL;
   r->next = NULL;
   r->prev = NULL;
   r->line_size = 0;
 
+  r->head = ec;
+  r->last = ec;
+  r->current = ec;
+
   if (!buffer) {
-    r->current = NULL;
-    r->head = NULL;
-    r->last = NULL;
     return r;
   }
 
@@ -104,17 +110,13 @@ void add_char(row_t *r, char c) {
 }
 
 void delete_char(row_t *r) {
-  if (!r->current) {
+  if (r->line_size == 0) {
     return;
   }
 
   echar_t *to_delete = r->current;
 
-  if (r->line_size == 1) {
-    r->head = NULL;
-    r->last = NULL;
-    r->current = NULL;
-  } else if (to_delete == r->head) {
+  if (to_delete == r->head) {
     r->current = to_delete->next;
     r->head = r->current;
     r->head->prev = NULL;
@@ -122,15 +124,30 @@ void delete_char(row_t *r) {
     r->current = to_delete->prev;
     r->last = r->current;
     r->last->next = NULL;
+    g_state->cx --;
   } else {
-    r->current = to_delete->prev;
-    r->current->next = to_delete->next;
-    to_delete->next->prev = r->current;
+    r->current = to_delete->next;
+    r->current->prev = to_delete->prev;
+    to_delete->prev->next = r->current;
   }
 
-  g_state->cx --;
   r->line_size --;
   free(to_delete);
+}
+
+// delete char with a backspace
+// only delete before current, delete line if empty
+void backspace_char(row_t *r) {
+  if (r->current == NULL) {
+    // delete line
+    return;
+  }
+
+  if (r->current != r->last) {
+    g_state->cx --;
+  }
+
+  delete_char(r);
 }
 
 // insert row after current
@@ -219,23 +236,23 @@ void delete_row(void) {
 }
 
 void clear_row(row_t *r) {
-  echar_t *ec = r->head;
+  echar_t *ec = r->head->next;
   while (ec) {
     echar_t *tmp = ec;
     ec = ec->next;
     free(tmp);
   }
 
-  r->head = NULL;
-  r->last = NULL;
-  r->current = NULL;
+  r->win = NULL;
+  r->last = r->head;
+  r->current = r->head;
   r->line_size = 0;
 }
 
 static void adjust_x_cursor(void) {
   size_t cx = 0;
   row_t *cur_row = g_state->current;
-  cur_row->current = cur_row->head;
+  cur_row->current = cur_row->head->next;
 
   for (size_t i = 0;
       i < g_state->cx &&
@@ -269,7 +286,7 @@ void down_row(void) {
 }
 
 void left_column(row_t *r) {
-  if (r->current && r->current->prev) {
+  if (r->current->prev && r->current->prev->c != '\0') {
     r->current = r->current->prev;
     g_state->cx --;
   }

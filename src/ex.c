@@ -11,7 +11,9 @@
 // linked list to array of chars
 static char* to_string(row_t *r) {
   char *result = malloc(r->line_size * sizeof(char));
-  echar_t *ec = r->head->next;
+
+  // first char is the null char, second char is ':'
+  echar_t *ec = r->head->next->next;
   for (size_t i = 0; ec && i < r->line_size; i++) {
     snprintf(result + i, r->line_size - i, "%c", ec->c);
     ec = ec->next;
@@ -20,13 +22,27 @@ static char* to_string(row_t *r) {
   return result;
 }
 
+static void quit(void) {
+  destroy_editor();
+  destroy_screen();
+  exit(0);
+}
+
+static void save(void) {
+}
+
 void ex_match_action(row_t *status) {
   char *command = to_string(status);
 
   if (CMP2(command, "q", "quit")) {
     free(command);
-    destroy_editor();
-    destroy_screen();
-    exit(0);
+    quit();
+  } else if (CMP1(command, "w")) {
+    free(command);
+    save();
+  } else if (CMP1(command, "wq")) {
+    free(command);
+    save();
+    quit();
   }
 }

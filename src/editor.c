@@ -17,6 +17,7 @@ void init_editor(const char *filename) {
     for (size_t i = 0; getline(&line, &len, fp) != -1; i++) {
       // trim newline char
       line[strcspn(line, "\n")] = 0;
+
       append_row(line);
     }
 
@@ -32,7 +33,7 @@ void init_editor(const char *filename) {
 
   // we want to start at the top when user opens up a new file
   g_state->current = g_state->head;
-  g_state->current->current = g_state->current->head;
+  g_state->current->current = g_state->current->head->next;
 }
 
 void destroy_editor(void) {

@@ -1,6 +1,8 @@
 #ifndef KEYPRESS_H
 #define KEYPRESS_H
 
+#define KEY_ESC 27
+
 // keypress listeners
 // There has to be exactly one listener running
 

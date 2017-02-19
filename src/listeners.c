@@ -7,6 +7,7 @@
 
 // we want to preserve cursor position when exit from ex mode
 static void enter_ex(void) {
+  clear_row(g_state->status);
   g_state->t_cx = g_state->cx;
   g_state->t_cy = g_state->cy;
   g_state->cx = 0;
@@ -18,7 +19,14 @@ static void exit_ex(void) {
   g_state->cy = g_state->t_cy;
   g_state->t_cx = 0;
   g_state->t_cy = 0;
-  clear_row(g_state->status);
+}
+
+static void enter_insert(void) {
+  g_state->cx ++;
+}
+
+static void exit_insert(void) {
+  g_state->cx --;
 }
 
 void start_listener(void) {
@@ -26,6 +34,8 @@ void start_listener(void) {
     start_normal_listener();
   } else if (g_state->mode == EX) {
     start_ex_listener();
+  } else if (g_state->mode == INSERT) {
+    start_insert_listener();
   }
 }
 
@@ -45,12 +55,26 @@ void start_normal_listener(void) {
     case 'l':
       right_column(g_state->current);
       break;
+    case 'x':
+      delete_char(g_state->current);
+      render_window(NULL, g_state->current);
+      break;
     case ':':
       // enter ex mode
       g_state->mode = EX;
       enter_ex();
       add_char(g_state->status, ':');
-      render_window(g_screen->status_window->w, g_state->status);
+      render_window(g_screen->status_window, g_state->status);
+      break;
+    case 'i':
+      // enter insert mode
+      g_state->mode = INSERT;
+      enter_insert();
+      break;
+    case 'a':
+      // enter insert mode
+      g_state->mode = INSERT;
+      enter_insert();
       break;
     default:
       break;
@@ -77,17 +101,37 @@ void start_ex_listener(void) {
   }
 
   // exit EX mode when status bar is empty
-  if (!g_state->status->current) {
+  if (g_state->status->line_size == 0) {
     g_state->mode = NORMAL;
     exit_ex();
   }
 
-  render_window(g_screen->status_window->w, g_state->status);
+  render_window(g_screen->status_window, g_state->status);
   rerender();
   start_listener();
 }
 
 void start_insert_listener(void) {
+  int ch = getch();
+  switch (ch) {
+    case '\n':
+      break;
+    case KEY_BACKSPACE:
+      backspace_char(g_state->current);
+      render_window(NULL, g_state->current);
+      break;
+    case KEY_ESC:
+      g_state->mode = NORMAL;
+      exit_insert();
+      break;
+    default:
+      add_char(g_state->current, (char) ch);
+      render_window(NULL, g_state->current);
+      break;
+  }
+
+  rerender();
+  start_listener();
 }
 
 void start_visual_listener(void) {
