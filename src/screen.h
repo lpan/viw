@@ -1,5 +1,5 @@
-#ifndef WINDOWS_H
-#define WINDOWS_H
+#ifndef SCREEN_H
+#define SCREEN_H
 
 #include <ncurses.h>
 #include "state.h"

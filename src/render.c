@@ -1,6 +1,6 @@
 #include <ncurses.h>
 #include "state.h"
-#include "windows.h"
+#include "screen.h"
 
 static void render_window(WINDOW *w, row_t *r) {
   if (!r) {

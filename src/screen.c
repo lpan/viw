@@ -1,6 +1,6 @@
 #include <ncurses.h>
 #include <stdlib.h>
-#include "windows.h"
+#include "screen.h"
 
 screen_t *g_screen;
 
