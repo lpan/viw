@@ -110,6 +110,7 @@ void add_char(row_t *r, char c) {
 }
 
 // delete char in normal mode
+// note: in normal mode current cant be the null char
 void delete_char(row_t *r) {
   if (r->line_size == 0) {
     return;
@@ -125,7 +126,11 @@ void delete_char(row_t *r) {
     r->current = to_delete->prev;
     r->last = r->current;
     r->last->next = NULL;
-    g_state->cx --;
+
+    // handle empty row
+    if (r->current->c != '\0') {
+      g_state->cx --;
+    }
   } else {
     r->current = to_delete->next;
     r->current->prev = to_delete->prev;
@@ -145,6 +150,11 @@ void backspace_char(row_t *r) {
   }
 
   delete_char(r);
+
+  // handle empty row
+  if (r->current->c == '\0') {
+    g_state->cx --;
+  }
 
   if (r->current != r->last) {
     g_state->cx --;

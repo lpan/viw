@@ -44,7 +44,7 @@ static void exit_insert(void) {
 
   // current node cant be the null char under 'normal' mode
   row_t *cur_row = g_state->current;
-  if (cur_row->current->c == '\0') {
+  if (cur_row->current->c == '\0' && cur_row->current->next) {
     cur_row->current = cur_row->current->next;
     g_state->cx ++;
   }
