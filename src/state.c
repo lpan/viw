@@ -182,11 +182,29 @@ void delete_row(void) {
 void update_row(char c) {
 }
 
+static void adjust_x_cursor(void) {
+  size_t cx = 0;
+  row_t *cur_row = g_state->current;
+  cur_row->current = cur_row->head;
+
+  for (size_t i = 0;
+      i < g_state->cx &&
+      cur_row->current &&
+      cur_row->current->next;
+      i ++) {
+    cur_row->current = cur_row->current->next;
+    cx ++;
+  }
+  g_state->cx = cx;
+}
+
 // move up
 void up_row(void) {
   if (g_state->current->prev) {
     g_state->current = g_state->current->prev;
     g_state->cy --;
+
+    adjust_x_cursor();
   }
 }
 
@@ -195,5 +213,21 @@ void down_row(void) {
   if (g_state->current->next) {
     g_state->current = g_state->current->next;
     g_state->cy ++;
+
+    adjust_x_cursor();
+  }
+}
+
+void left_column(row_t *r) {
+  if (r->current && r->current->prev) {
+    r->current = r->current->prev;
+    g_state->cx --;
+  }
+}
+
+void right_column(row_t *r) {
+  if (r->current && r->current->next) {
+    r->current = r->current->next;
+    g_state->cx ++;
   }
 }

@@ -3,4 +3,6 @@
 
 void initial_render(void);
 
+void rerender(void);
+
 #endif

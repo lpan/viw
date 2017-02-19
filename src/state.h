@@ -66,4 +66,8 @@ void up_row(void);
 
 void down_row(void);
 
+void left_column(row_t *r);
+
+void right_column(row_t *r);
+
 #endif

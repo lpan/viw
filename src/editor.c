@@ -29,6 +29,10 @@ void init_editor(const char *filename) {
   if (!g_state->current) {
     append_row(NULL);
   }
+
+  // we want to start at the top when user opens up a new file
+  g_state->current = g_state->head;
+  g_state->current->current = g_state->current->head;
 }
 
 void destroy_editor(void) {

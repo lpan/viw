@@ -31,4 +31,12 @@ void initial_render(void) {
       top = top->next;
     }
   }
+
+  // move cursor to initial position
+  move(g_state->cy, g_state->cx);
+}
+
+void rerender(void) {
+  move(g_state->cy, g_state->cx);
+  refresh();
 }
