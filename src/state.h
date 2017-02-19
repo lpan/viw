@@ -41,11 +41,7 @@ typedef struct state {
   row_t *current;
   row_t *head;
   row_t *last;
-
-  // each ncurses window represents a line
-  WINDOW **rows;
-  // display current mode, as well as ex mode commands
-  WINDOW *status_bar;
+  row_t *status;
 
   bool is_dirty;
   size_t num_rows;

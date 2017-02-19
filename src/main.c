@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "editor.h"
-#include "window.h"
+#include "windows.h"
 #include "listeners.h"
 
 int main(int argc, char **argv) {
@@ -12,13 +12,15 @@ int main(int argc, char **argv) {
 
   char *filename = argv[1];
 
+  // defines g_windows, g_status_window
+  init_screen();
+  // defines g_state
   init_editor(filename);
-  init_window();
 
   start_normal_listener();
 
   destroy_editor();
-  destroy_window();
+  destroy_screen();
 
   return 0;
 }
