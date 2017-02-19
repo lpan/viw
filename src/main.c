@@ -3,6 +3,7 @@
 #include "editor.h"
 #include "windows.h"
 #include "listeners.h"
+#include "render.h"
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -12,10 +13,10 @@ int main(int argc, char **argv) {
 
   char *filename = argv[1];
 
-  // defines g_windows, g_status_window
   init_screen();
-  // defines g_state
   init_editor(filename);
+
+  initial_render();
 
   start_normal_listener();
 
