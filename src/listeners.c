@@ -21,21 +21,35 @@ static void exit_ex(void) {
   g_state->t_cy = 0;
 }
 
-static void enter_front_insert(void) {
+// enter insert mode with "i"
+static void i_insert(void) {
   row_t *cur_row = g_state->current;
-
-  // handle an empty row
-  if (cur_row->current->c != '\0') {
-    cur_row->current = cur_row->current->prev;
-  }
+  cur_row->current = cur_row->current->prev;
 }
 
-static void enter_insert(void) {
+static void ui_insert(void) {
+  row_t *cur_row = g_state->current;
+  g_state->cx = 0;
+  cur_row->current = cur_row->head->next;
+}
+
+static void a_insert(void) {
+  g_state->cx ++;
+}
+
+static void ua_insert(void) {
+  row_t *cur_row = g_state->current;
+  g_state->cx = cur_row->line_size;
+  cur_row->current = cur_row->last;
+}
+
+// enter insert mode with "a"
+static void enter_insert(void (*f) (void)) {
   row_t *cur_row = g_state->current;
 
   // handle an empty row
   if (cur_row->current->c != '\0') {
-    g_state->cx ++;
+    f();
   }
 }
 
@@ -44,9 +58,11 @@ static void exit_insert(void) {
 
   // current node cant be the null char under 'normal' mode
   row_t *cur_row = g_state->current;
-  if (cur_row->current->c == '\0' && cur_row->current->next) {
-    cur_row->current = cur_row->current->next;
+  if (cur_row->current->c == '\0') {
     g_state->cx ++;
+    if (cur_row->current->next) {
+      cur_row->current = cur_row->current->next;
+    }
   }
 }
 
@@ -81,22 +97,26 @@ void start_normal_listener(void) {
       render_window(NULL, g_state->current);
       break;
     case ':':
-      // enter ex mode
       g_state->mode = EX;
       enter_ex();
       add_char(g_state->status, ':');
       render_window(g_screen->status_window, g_state->status);
       break;
     case 'i':
-      // enter insert mode
       g_state->mode = INSERT;
-      enter_front_insert();
+      enter_insert(i_insert);
+      break;
+    case 'I':
+      g_state->mode = INSERT;
+      enter_insert(ui_insert);
       break;
     case 'a':
-      // enter insert mode
       g_state->mode = INSERT;
-      enter_insert();
+      enter_insert(a_insert);
       break;
+    case 'A':
+      g_state->mode = INSERT;
+      enter_insert(ua_insert);
     default:
       break;
   }
