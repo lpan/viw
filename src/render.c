@@ -3,6 +3,13 @@
 #include "screen.h"
 #include "render.h"
 
+/*
+ * If row points to NULL, display empty row with ~
+ * If win points to NULL, use r->win as window
+ *
+ * We only pass in win for initial render, most of the time, we want to call
+ * this function like this `render_window(NULL, my_row)`
+ */
 void render_window(window_t *win, row_t *r) {
   if (r && r->win) {
     win = r->win;
@@ -26,8 +33,11 @@ void render_window(window_t *win, row_t *r) {
   wrefresh(win->w);
 }
 
+/*
+ * first (LINES - 1) lines to the display
+ */
 void initial_render(void) {
-  // locate the top row to display
+  // locate the top row
   row_t *r = g_state->head;
   for (size_t i = 0; i < g_screen->top_window; i ++) {
     r = r->next;
@@ -47,6 +57,9 @@ void initial_render(void) {
   move(g_state->cy, g_state->cx);
 }
 
+/*
+ * readjust cursor position and refresh main window
+ */
 void rerender(void) {
   move(g_state->cy, g_state->cx);
   refresh();
