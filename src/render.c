@@ -34,6 +34,18 @@ void render_window(window_t *win, row_t *r) {
 }
 
 /*
+ * render top to bottom: r = r->next
+ * render bottom to top: r = r->prev
+ */
+void render_all(row_t *(*proceed) (row_t *)) {
+  row_t *r = g_state->current;
+  for (size_t i = 0; r && i < g_screen->num_windows; i ++) {
+    render_window(NULL, r);
+    r = proceed(r);
+  }
+}
+
+/*
  * first (LINES - 1) lines to the display
  */
 void initial_render(void) {
@@ -47,6 +59,7 @@ void initial_render(void) {
   for (size_t i = 0; i < g_screen->num_windows; i ++) {
     render_window(g_screen->windows[i], r);
     if (r) {
+      // match first (LINES - 1) rows to windows
       r->win = g_screen->windows[i];
       g_screen->windows[i]->r = r;
       r = r->next;
@@ -54,13 +67,13 @@ void initial_render(void) {
   }
 
   // move cursor to initial position
-  move(g_state->cy, g_state->cx);
+  move(g_state->r_cy, g_state->cx);
 }
 
 /*
  * readjust cursor position and refresh main window
  */
 void rerender(void) {
-  move(g_state->cy, g_state->cx);
+  move(g_state->r_cy, g_state->cx);
   refresh();
 }

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include "render.h"
+#include "screen.h"
 #include "state.h"
 
 state_t *g_state;
@@ -91,6 +93,7 @@ void init_state(const char *filename) {
 
   g_state->cx = 0;
   g_state->cy = 0;
+  g_state->r_cy = 0;
 
   g_state->t_cx = 0;
   g_state->t_cy = 0;
@@ -309,11 +312,69 @@ static void adjust_x_cursor(void) {
   g_state->cx = cx;
 }
 
+static row_t *next_row(row_t *r) {
+  if (r->next) {
+    return r = r->next;
+  }
+  return r;
+}
+
+static row_t *prev_row(row_t *r) {
+  if (r->prev) {
+    return r = r->prev;
+  }
+  return r;
+}
+
+/*
+ * Handle vertically scrolling
+ * It's technically O(1) since g_screen->num_windows is a constant ;)
+ */
+static void adjust_windows(void) {
+  // scroll down
+  if (g_state->cy >= g_screen->top_window + g_screen->num_windows) {
+    row_t *r = g_state->current;
+    g_screen->top_window ++;
+
+    for (size_t i = 0; i < g_screen->num_windows; i ++) {
+      window_t *w = g_screen->windows[g_screen->num_windows - i - 1];
+      w->r = r;
+      r->win = w;
+      r = r->prev;
+    }
+
+    g_state->r_cy --;
+
+    // render from bottom to top
+    render_all(prev_row);
+  }
+
+  // scroll up
+  if (g_state->cy < g_screen->top_window) {
+    row_t *r = g_state->current;
+    g_screen->top_window --;
+
+    for (size_t i = 0; i < g_screen->num_windows; i ++) {
+      window_t *w = g_screen->windows[i];
+      w->r = r;
+      r->win = w;
+      r = r->next;
+    }
+
+    g_state->r_cy ++;
+
+    // render from top to bottom
+    render_all(next_row);
+  }
+}
+
 void up_row(void) {
   if (g_state->current->prev) {
     g_state->current = g_state->current->prev;
+    g_state->r_cy --;
     g_state->cy --;
 
+    adjust_windows();
     adjust_x_cursor();
   }
 }
@@ -321,8 +382,10 @@ void up_row(void) {
 void down_row(void) {
   if (g_state->current->next) {
     g_state->current = g_state->current->next;
+    g_state->r_cy ++;
     g_state->cy ++;
 
+    adjust_windows();
     adjust_x_cursor();
   }
 }

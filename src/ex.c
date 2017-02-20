@@ -38,7 +38,11 @@ static char *row_to_string(void) {
   while (r) {
     char *line = to_string(r->head->next, r->line_size);
     strcat(result, line);
-    strcat(result, "\n");
+
+    // no newline for the last line
+    if (r->next) {
+      strcat(result, "\n");
+    }
     free(line);
     r = r->next;
   }

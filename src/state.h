@@ -35,7 +35,8 @@ typedef struct row {
 } row_t;
 
 typedef struct state {
-  size_t cx, cy;
+  // r_cy is the relative y coordinate
+  size_t cx, cy, r_cy;
   size_t t_cx, t_cy;
 
   // insert/normal/visual/ex

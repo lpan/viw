@@ -9,14 +9,14 @@
 static void enter_ex(void) {
   clear_row(g_state->status);
   g_state->t_cx = g_state->cx;
-  g_state->t_cy = g_state->cy;
+  g_state->t_cy = g_state->r_cy;
   g_state->cx = 0;
-  g_state->cy = g_screen->num_windows;
+  g_state->r_cy = g_screen->num_windows;
 }
 
 static void exit_ex(void) {
   g_state->cx = g_state->t_cx;
-  g_state->cy = g_state->t_cy;
+  g_state->r_cy = g_state->t_cy;
   g_state->t_cx = 0;
   g_state->t_cy = 0;
 }
