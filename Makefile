@@ -18,6 +18,6 @@ mem:
 	@rm viw
 
 test:
-	@$(CC) $(FLAGS) src/state.c src/editor.c tests/state-test.c -o test
+	@$(CC) $(FLAGS) src/buffer.c tests/buffer-test.c -o test
 	valgrind --leak-check=yes ./test
 	@rm test
