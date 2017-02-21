@@ -33,16 +33,20 @@ void render_window(window_t *win, row_t *r) {
   wrefresh(win->w);
 }
 
+void render_some(row_t *(*proceed) (row_t *), size_t n) {
+  row_t *r = g_state->current;
+  for (size_t i = 0; r && i < n; i ++) {
+    render_window(NULL, r);
+    r = proceed(r);
+  }
+}
+
 /*
  * render top to bottom: r = r->next
  * render bottom to top: r = r->prev
  */
 void render_all(row_t *(*proceed) (row_t *)) {
-  row_t *r = g_state->current;
-  for (size_t i = 0; r && i < g_screen->num_windows; i ++) {
-    render_window(NULL, r);
-    r = proceed(r);
-  }
+  render_some(proceed, g_screen->num_windows);
 }
 
 /*

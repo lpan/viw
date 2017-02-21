@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
@@ -312,14 +313,14 @@ static void adjust_x_cursor(void) {
   g_state->cx = cx;
 }
 
-static row_t *next_row(row_t *r) {
+row_t *next_row(row_t *r) {
   if (r->next) {
     return r = r->next;
   }
   return r;
 }
 
-static row_t *prev_row(row_t *r) {
+row_t *prev_row(row_t *r) {
   if (r->prev) {
     return r = r->prev;
   }
@@ -327,7 +328,7 @@ static row_t *prev_row(row_t *r) {
 }
 
 /*
- * Handle vertically scrolling
+ * Handle vertical scrolling
  * It's technically O(1) since g_screen->num_windows is a constant ;)
  */
 static void adjust_windows(void) {

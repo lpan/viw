@@ -75,6 +75,10 @@ void update_row(char c);
 
 void clear_row(row_t *r);
 
+row_t *next_row(row_t *r);
+
+row_t *prev_row(row_t *r);
+
 void up_row(void);
 
 void down_row(void);

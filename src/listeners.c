@@ -43,6 +43,42 @@ static void ua_insert(void) {
   cur_row->current = cur_row->last;
 }
 
+static void o_insert(void) {
+  append_row(NULL);
+
+  g_state->cx = 0;
+  g_state->cy ++;
+  g_state->r_cy ++;
+
+  row_t *r = g_state->current;
+
+  for (size_t i = g_state->r_cy; r && i < g_screen->num_windows; i ++) {
+    window_t *w = g_screen->windows[i];
+    w->r = r;
+    r->win = w;
+    r = r->next;
+  }
+
+  render_some(next_row, g_screen->num_windows - g_state->r_cy);
+}
+
+static void uo_insert(void) {
+  prepend_row(NULL);
+
+  g_state->cx = 0;
+
+  row_t *r = g_state->current;
+
+  for (size_t i = g_state->r_cy; r && i < g_screen->num_windows; i ++) {
+    window_t *w = g_screen->windows[i];
+    w->r = r;
+    r->win = w;
+    r = r->next;
+  }
+
+  render_some(next_row, g_screen->num_windows - g_state->r_cy);
+}
+
 // enter insert mode with "a"
 static void enter_insert(void (*f) (void)) {
   row_t *cur_row = g_state->current;
@@ -117,6 +153,15 @@ void start_normal_listener(void) {
     case 'A':
       g_state->mode = INSERT;
       enter_insert(ua_insert);
+      break;
+    case 'o':
+      g_state->mode = INSERT;
+      enter_insert(o_insert);
+      break;
+    case 'O':
+      g_state->mode = INSERT;
+      enter_insert(uo_insert);
+      break;
     default:
       break;
   }
