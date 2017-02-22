@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "state.h"
-#include "editor.h"
 #include "screen.h"
 #include "ex.h"
 
+/*
 #define CMP1(s, s1) (strcmp(s, s1) == 0)
 #define CMP2(s, s1, s2) (strcmp(s, s1) == 0 || strcmp(s, s2) == 0)
 
@@ -81,3 +81,4 @@ void ex_match_action(row_t *status) {
     quit();
   }
 }
+*/

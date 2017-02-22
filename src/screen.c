@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #include "screen.h"
 
-screen_t *g_screen;
-
-static window_t **init_windows(void) {
+static window_t **init_windows(size_t term_height) {
   // determine number of windows we want to display from terminal height
-  // TODO adjust this number when the height changes
-  size_t line_number = g_screen->num_windows;
+  size_t line_number = term_height - 1;
   const size_t height = 1, width = COLS;
   window_t **windows = malloc(line_number * sizeof(window_t *));
 
@@ -20,11 +17,11 @@ static window_t **init_windows(void) {
   return windows;
 }
 
-static window_t *init_status_window(void) {
+static window_t *init_status_window(size_t term_height) {
   const size_t height = 1, width = COLS;
 
   window_t *status_window = malloc(sizeof(window_t));
-  status_window->w = newwin(height, width, g_screen->num_windows, 0);
+  status_window->w = newwin(height, width, term_height - 1, 0);
   status_window->r = NULL;
 
   return status_window;
@@ -44,22 +41,18 @@ static void destroy_windows(window_t **windows) {
   free(windows);
 }
 
-void init_screen(void) {
-  initscr();
-  raw();
-  keypad(stdscr, TRUE);
-  noecho();
+screen_t *init_screen(size_t term_height) {
+  screen_t *scr = malloc(sizeof(screen_t));
+  scr->num_windows = term_height - 1;
+  scr->top_window = 0;
+  scr->windows = init_windows(term_height);
+  scr->status_window = init_status_window(term_height);
 
-  g_screen = malloc(sizeof(screen_t));
-  g_screen->num_windows = LINES - 1;
-  g_screen->top_window = 0;
-  g_screen->windows = init_windows();
-  g_screen->status_window = init_status_window();
+  return scr;
 }
 
-void destroy_screen(void) {
-  destroy_windows(g_screen->windows);
-  destroy_window(g_screen->status_window);
-  free(g_screen);
-  endwin();
+void destroy_screen(screen_t *scr) {
+  destroy_windows(scr->windows);
+  destroy_window(scr->status_window);
+  free(scr);
 }

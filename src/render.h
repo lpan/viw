@@ -11,8 +11,8 @@ void render_some(row_t *(*proceed) (row_t *), size_t n);
 
 void render_all(row_t *(*proceed) (row_t *));
 
-void initial_render(void);
+void initial_render(state_t *st, buffer_t *buf);
 
-void rerender(void);
+void rerender(state_t *st);
 
 #endif

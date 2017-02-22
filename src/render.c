@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include "state.h"
+#include "buffer.h"
 #include "screen.h"
 #include "render.h"
 
@@ -33,6 +34,7 @@ void render_window(window_t *win, row_t *r) {
   wrefresh(win->w);
 }
 
+/*
 void render_some(row_t *(*proceed) (row_t *), size_t n) {
   row_t *r = g_state->current;
   for (size_t i = 0; r && i < n; i ++) {
@@ -40,21 +42,22 @@ void render_some(row_t *(*proceed) (row_t *), size_t n) {
     r = proceed(r);
   }
 }
+*/
 
 /*
  * render top to bottom: r = r->next
  * render bottom to top: r = r->prev
- */
 void render_all(row_t *(*proceed) (row_t *)) {
   render_some(proceed, g_screen->num_windows);
 }
+*/
 
 /*
  * first (LINES - 1) lines to the display
  */
-void initial_render(void) {
+void initial_render(state_t *st) {
   // locate the top row
-  row_t *r = g_state->head;
+  row_t *r = buf->head;
   for (size_t i = 0; i < g_screen->top_window; i ++) {
     r = r->next;
   }
@@ -71,13 +74,13 @@ void initial_render(void) {
   }
 
   // move cursor to initial position
-  move(g_state->r_cy, g_state->cx);
+  move(st->cy, st->cx);
 }
 
 /*
  * readjust cursor position and refresh main window
  */
-void rerender(void) {
-  move(g_state->r_cy, g_state->cx);
+void rerender(state_t *st) {
+  move(st->cy, st->cx);
   refresh();
 }

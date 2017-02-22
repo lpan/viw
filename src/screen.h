@@ -2,7 +2,8 @@
 #define SCREEN_H
 
 #include <ncurses.h>
-#include "state.h"
+
+typedef struct row row_t;
 
 typedef struct window {
   WINDOW *w;
@@ -23,10 +24,8 @@ typedef struct screen {
 
 extern screen_t *g_screen;
 
-void init_screen(void);
+screen_t *init_screen(size_t term_height);
 
-void destroy_screen(void);
-
-void refresh_window(void);
+void destroy_screen(screen_t *scr);
 
 #endif

@@ -3,23 +3,34 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
-#include "render.h"
 #include "screen.h"
+#include "buffer.h"
 #include "state.h"
 
-state_t *init_state(void) {
+state_t *init_state(const char *filename) {
   state_t *st = malloc(sizeof(state_t));
 
+  st->mode = NORMAL;
   st->cx = 0;
   st->cy = 0;
 
-  st->t_cx = 0;
-  st->t_cy = 0;
+  st->buf = init_buffer(filename);
+  st->scr = init_screen(LINES);
 
-  st->mode = NORMAL;
+  update_cursor_position(st);
 
   return st;
 }
+
+void destroy_state(state_t *st) {
+  destroy_buffer(st->buf);
+  destroy_screen(st->scr);
+  free(st);
+}
+
+void update_cursor_position(state_t *st) {
+}
+
 
 /*
 void add_char(row_t *r, char c) {
@@ -136,7 +147,3 @@ static void adjust_windows(void) {
   }
 }
 */
-
-void destroy_state(state_t *st) {
-  free(st);
-}

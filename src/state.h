@@ -4,8 +4,7 @@
 #define LINE_LENGTH 80
 
 #include <stdlib.h>
-#include <stdbool.h>
-#include <ncurses.h>
+#include "screen.h"
 #include "buffer.h"
 
 struct window;
@@ -18,17 +17,21 @@ typedef enum MODE {
 } MODE;
 
 typedef struct state {
-  // r_cy is the relative y coordinate
-  size_t cx, cy;
-  size_t t_cx, t_cy;
+  buffer_t *buf;
+  screen_t *scr;
 
+  size_t cx, cy;
   // insert/normal/visual/ex
   MODE mode;
 } state_t;
 
-extern state_t *g_state;
+state_t *init_state(const char *filename);
 
-state_t *init_state(void);
+/*
+ * Cursor position can be computed from:
+ * buf->current_row, buf->current_char, scr->top_row
+ */
+void update_cursor_position(state_t *st);
 
 void destroy_state(state_t *st);
 

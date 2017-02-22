@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "editor.h"
+#include "buffer.h"
 #include "screen.h"
 #include "listeners.h"
 #include "render.h"
@@ -13,14 +13,18 @@ int main(int argc, char **argv) {
 
   char *filename = argv[1];
 
-  init_screen();
-  init_editor(filename);
+  // ncurses stuff
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
 
-  initial_render();
-  start_listener();
+  state_t *st = init_state(filename);
 
-  destroy_editor();
-  destroy_screen();
+  initial_render(st);
+  start_listener(st);
+
+  endwin();
 
   return 0;
 }
