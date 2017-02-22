@@ -58,7 +58,7 @@ void append_char(row_t *r, char c);
 /*
  * Prepend char to line then set the current char to new char
  */
-void preprend_char(row_t *r, char c);
+void prepend_char(row_t *r, char c);
 
 /*
  * Delete current char and set 'current' to point to next char

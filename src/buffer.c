@@ -38,20 +38,14 @@ static void read_file(buffer_t *buf, const char *filename) {
 static row_t *init_row(const char *line) {
   row_t *r = malloc(sizeof(row_t));
 
-  // null char
-  echar_t *ec = malloc(sizeof(echar_t));
-  ec->c = '\0';
-  ec->prev = NULL;
-  ec->next = NULL;
-
   r->win = NULL;
   r->next = NULL;
   r->prev = NULL;
   r->line_size = 0;
 
-  r->head = ec;
-  r->last = ec;
-  r->current = ec;
+  r->head = NULL;
+  r->last = NULL;
+  r->current = NULL;
 
   if (!line) {
     return r;
@@ -60,6 +54,9 @@ static row_t *init_row(const char *line) {
   for (size_t i = 0; i < strlen(line); i ++) {
     append_char(r, line[i]);
   }
+
+  // set current to be the first char
+  r->current = r->head;
   return r;
 }
 
@@ -72,6 +69,9 @@ buffer_t *init_buffer(const char *filename) {
   buf->current = NULL;
   buf->status_row = init_row(NULL);
 
+  buf->current_row = 0;
+  buf->current_char = 0;
+
   buf->is_dirty = false;
   buf->filename = filename;
 
@@ -81,7 +81,7 @@ buffer_t *init_buffer(const char *filename) {
   buf->current = buf->head;
   // Set current to the first char of line
   // TODO set current to the first non space char
-  buf->current->current = buf->current->head->next;
+  buf->current->current = buf->current->head;
 
   return buf;
 }
@@ -95,8 +95,13 @@ void append_char(row_t *r, char c) {
   ec->prev = NULL;
   ec->next = NULL;
 
-  // a row always contains a NULL char
-  assert(r->head->c == '\0');
+  if (r->line_size == 0) {
+    r->head = ec;
+    r->last = ec;
+    r->current = ec;
+    r->line_size ++;
+    return;
+  }
 
   if (r->current == r->last) {
     prev = r->current;
@@ -116,12 +121,44 @@ void append_char(row_t *r, char c) {
   r->current = ec;
 }
 
+void prepend_char(row_t *r, char c) {
+  // insert at head
+  if (r->head && r->current == r->head) {
+    echar_t *ec = malloc(sizeof(echar_t));
+    ec->c = c;
+    ec->prev = NULL;
+    ec->next = r->head;
+
+    r->head->prev = ec;
+    r->head = ec;
+    r->current = ec;
+
+    r->line_size ++;
+    return;
+  }
+
+  r->current = r->current->prev;
+
+  append_char(r, c);
+}
+
 void delete_char(row_t *r) {
   if (r->line_size == 0) {
     return;
   }
 
   echar_t *to_delete = r->current;
+
+  if (r->line_size == 1) {
+    to_delete = r->current;
+    r->current = NULL;
+    r->head = NULL;
+    r->last = NULL;
+
+    r->line_size --;
+    free(to_delete);
+    return;
+  }
 
   if (to_delete == r->head) {
     r->current = to_delete->next;
@@ -168,38 +205,28 @@ void append_row(buffer_t *buf, const char *line) {
 }
 
 void prepend_row(buffer_t *buf, const char *line) {
-  row_t *r = init_row(line);
-  row_t *prev = NULL;
-  row_t *next = NULL;
+  // insert at head
+  if (buf->head && buf->current == buf->head) {
+    row_t *r = init_row(line);
+    r->prev = NULL;
+    r->next = buf->head;
 
-  if (buf->num_rows == 0) {
+    buf->head->prev = r;
     buf->head = r;
-    buf->last= r;
-  } else if (buf->current == buf->head) {
-    next = buf->current;
-    next->prev = r;
-    buf->head = r;
-  } else {
-    prev = buf->current->prev;
-    next = buf->current;
-    prev->next = r;
-    next->prev = r;
+    buf->current = r;
+
+    buf->num_rows ++;
+    return;
   }
 
-  r->next = next;
-  r->prev = prev;
-
-  buf->num_rows ++;
-  buf->current = r;
+  buf->current = buf->current->prev;
+  append_row(buf, line);
 }
 
 static void move_up(buffer_t *buf) {
   if (buf->current->prev) {
     buf->current = buf->current->prev;
     buf->current_row --;
-
-    // adjust_windows();
-    // adjust_x_cursor();
   }
 }
 
@@ -207,15 +234,12 @@ static void move_down(buffer_t *buf) {
   if (buf->current->next) {
     buf->current = buf->current->next;
     buf->current_row ++;
-
-    // adjust_windows();
-    // adjust_x_cursor();
   }
 }
 
 static void move_left(buffer_t *buf) {
   row_t *r = buf->current;
-  if (r->current->prev && r->current->prev->c != '\0') {
+  if (r->current && r->current->prev) {
     r->current = r->current->prev;
     buf->current_char --;
   }
@@ -237,8 +261,8 @@ void move_current(buffer_t *buf, DIRECTION d) {
     case DOWN:
       move_down(buf);
       break;
-    case LEFT:
-      move_left(buf);
+      case LEFT:
+        move_left(buf);
       break;
     case RIGHT:
       move_right(buf);
@@ -249,7 +273,7 @@ void move_current(buffer_t *buf, DIRECTION d) {
 }
 
 void clear_row(row_t *r) {
-  echar_t *ec = r->head->next;
+  echar_t *ec = r->head;
   while (ec) {
     echar_t *tmp = ec;
     ec = ec->next;

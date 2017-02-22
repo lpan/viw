@@ -31,7 +31,6 @@ void destroy_state(state_t *st) {
 void update_cursor_position(state_t *st) {
 }
 
-
 /*
 void add_char(row_t *r, char c) {
   append_char(r, c);

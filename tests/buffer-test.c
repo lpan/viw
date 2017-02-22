@@ -36,7 +36,7 @@ static void print_buffer(buffer_t *buf) {
 static int mycmp(row_t *r, const char *str) {
   const size_t s = 100;
   char tmp[s];
-  echar_t *c = r->head->next;
+  echar_t *c = r->head;
 
   for (size_t i = 0; c; i++) {
     snprintf(tmp + i, s - i, "%c", c->c);
@@ -53,11 +53,18 @@ static int test_chars(const char *filename) {
   assert(mycmp(buf->current, "zero") == 0);
   assert(buf->current->current->c == 'z');
 
+  prepend_char(buf->current, 'm');
+  assert(mycmp(buf->current, "mzero") == 0);
+  assert(buf->current->current->c == 'm');
+
+  delete_char(buf->current);
+  assert(mycmp(buf->current, "zero") == 0);
+  assert(buf->current->current->c == 'z');
+
   append_char(buf->current, 'm');
   assert(mycmp(buf->current, "zmero") == 0);
   assert(buf->current->current->c == 'm');
 
-  // delete m
   delete_char(buf->current);
   assert(mycmp(buf->current, "zero") == 0);
   assert(buf->current->current->c == 'e');
