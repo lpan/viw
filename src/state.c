@@ -29,14 +29,26 @@ void destroy_state(state_t *st) {
 }
 
 void update_cursor_position(state_t *st) {
+  size_t line_size = st->buf->current->line_size;
+  size_t current_row = st->buf->current_row;
+  size_t current_char = st->buf->current_char;
+  size_t top_row = st->scr->top_row;
+
+  st->cy = current_row - top_row;
+
+  if (line_size == 0) {
+    st->cx = 0;
+  } else if (st->cx >= line_size) {
+    st->cx = line_size - 1;
+  } else {
+    st->cx = current_char;
+  }
+}
+
+void update_display(state_t *st) {
 }
 
 /*
-void add_char(row_t *r, char c) {
-  append_char(r, c);
-  st->cx ++;
-}
-
  * delete_char() insert/ex mode version
  *
  * Always adjust cursor position
@@ -64,32 +76,6 @@ void backspace_char(row_t *r) {
     st->cx --;
     r->current = r->current->prev;
   }
-}
-
- * Handle situations such as cx > row->line_size
- */
-/*
-static void adjust_x_cursor(void) {
-  size_t cx = 0;
-  row_t *cur_row = st->current;
-
-  // handle empty row case
-  if (!cur_row->head->next) {
-    st->cx = cx;
-    return;
-  }
-
-  cur_row->current = cur_row->head->next;
-
-  for (size_t i = 0;
-      i < st->cx &&
-      cur_row->current &&
-      cur_row->current->next;
-      i ++) {
-    cur_row->current = cur_row->current->next;
-    cx ++;
-  }
-  st->cx = cx;
 }
 
 row_t *next_row(row_t *r) {

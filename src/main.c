@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   state_t *st = init_state(filename);
 
   initial_render(st);
-  start_listener(st);
+  // start_listener(st);
 
   endwin();
 

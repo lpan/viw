@@ -33,6 +33,13 @@ state_t *init_state(const char *filename);
  */
 void update_cursor_position(state_t *st);
 
+/*
+ * Determine current rows to be displayed and update windows <-> rows links
+ * Can be computed from:
+ * st->cy, buf->current_row, scr->top_window, scr->num_windows
+ */
+void update_display(state_t *st);
+
 void destroy_state(state_t *st);
 
 #endif
