@@ -140,18 +140,23 @@ int test_move_rows(const char *filename) {
   // if reach top do nothing
   move_current(buf, UP);
   assert(mycmp(buf->current, "zero") == 0);
+  assert(buf->current_row == 0);
 
   move_current(buf, DOWN);
   assert(mycmp(buf->current, "one") == 0);
+  assert(buf->current_row == 1);
 
   move_current(buf, DOWN);
   move_current(buf, DOWN);
   move_current(buf, DOWN);
   assert(mycmp(buf->current, "four") == 0);
+  assert(buf->current_row == 4);
   move_current(buf, DOWN);
   assert(mycmp(buf->current, "five") == 0);
+  assert(buf->current_row == 5);
   move_current(buf, DOWN);
   assert(mycmp(buf->current, "five") == 0);
+  assert(buf->current_row == 5);
 
   destroy_buffer(buf);
   return 0;
@@ -161,16 +166,25 @@ int test_move_chars(const char *filename) {
   buffer_t *buf = init_buffer(filename);
 
   assert(buf->current->current->c == 'z');
+  assert(buf->current_char == 0);
+
   move_current(buf, LEFT);
   assert(buf->current->current->c == 'z');
+  assert(buf->current_char == 0);
 
   move_current(buf, RIGHT);
   assert(buf->current->current->c == 'e');
+  assert(buf->current_char == 1);
   move_current(buf, RIGHT);
   move_current(buf, RIGHT);
   assert(buf->current->current->c == 'o');
+  assert(buf->current_char == 3);
   move_current(buf, RIGHT);
   assert(buf->current->current->c == 'o');
+  assert(buf->current_char == 3);
+
+  move_current(buf, LEFT);
+  assert(buf->current_char == 2);
 
   destroy_buffer(buf);
   return 0;
