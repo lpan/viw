@@ -21,7 +21,10 @@ int main(int argc, char **argv) {
 
   state_t *st = init_state(filename);
 
-  initial_render(st);
+  update_display(st);
+  render_windows(st->scr);
+
+  wgetch(st->scr->windows[0]->w);
   // start_listener(st);
 
   endwin();

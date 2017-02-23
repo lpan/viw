@@ -46,9 +46,6 @@ void update_cursor_position(state_t *st) {
 }
 
 /*
- * The runtime of this constant is always O(terminal_height - 1) which is O(1)
- * ;)
- *
  * We want to update the display when:
  * - scroll up/down
  * - insert/delete row(s)
@@ -59,11 +56,12 @@ void update_display(state_t *st) {
   size_t top_row = st->scr->top_row;
   size_t num_windows = st->scr->num_windows;
 
+  window_t **windows = st->scr->windows;
+
   row_t *r = st->buf->current;
 
-  for (size_t i = current_row - 1; i >= top_row; i --) {
-    assert(r);
-    st->scr->windows[i - top_row]->r = r;
+  for (size_t i = top_row; i < current_row; i ++) {
+    windows[top_row - i]->r = r;
     r = r->prev;
   }
 
@@ -71,10 +69,10 @@ void update_display(state_t *st) {
 
   for (size_t i = current_row; i < num_windows; i ++) {
     if (r) {
-      st->scr->windows[i - top_row]->r = r;
+      windows[i - top_row]->r = r;
       r = r->next;
     } else {
-      st->scr->windows[i - top_row]->r = NULL;
+      windows[i - top_row]->r = NULL;
     }
   }
 }

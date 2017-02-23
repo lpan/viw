@@ -3,7 +3,7 @@
 #include "screen.h"
 #include "render.h"
 
-static void render_window(window_t *w) {
+void render_window(window_t *w) {
   // only want to render dirty windows ;)
   if (!w->r->is_dirty) {
     return;
@@ -18,6 +18,7 @@ static void render_window(window_t *w) {
   }
 
   wprintw(w->w, "\n");
+  wrefresh(w->w);
   w->r->is_dirty = false;
 }
 
@@ -29,6 +30,7 @@ void render_windows(screen_t *scr) {
     if (!w->r) {
       werase(w->w);
       wprintw(w->w, "%c\n", '~');
+      wrefresh(w->w);
     } else {
       render_window(w);
     }

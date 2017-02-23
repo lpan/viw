@@ -42,7 +42,7 @@ static row_t *init_row(const char *line) {
   r->next = NULL;
   r->prev = NULL;
   r->line_size = 0;
-  r->is_dirty = false;
+  r->is_dirty = true;
 
   r->head = NULL;
   r->last = NULL;
