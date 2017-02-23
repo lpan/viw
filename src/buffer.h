@@ -22,6 +22,7 @@ typedef struct row {
   echar_t *head;
   echar_t *last;
   size_t line_size;
+  bool is_dirty;
 
   struct window *win;
 

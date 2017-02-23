@@ -42,6 +42,7 @@ static row_t *init_row(const char *line) {
   r->next = NULL;
   r->prev = NULL;
   r->line_size = 0;
+  r->is_dirty = false;
 
   r->head = NULL;
   r->last = NULL;
@@ -100,6 +101,7 @@ void append_char(row_t *r, char c) {
     r->last = ec;
     r->current = ec;
     r->line_size ++;
+    r->is_dirty = true;
     return;
   }
 
@@ -117,6 +119,7 @@ void append_char(row_t *r, char c) {
   ec->next = next;
   ec->prev = prev;
 
+  r->is_dirty = true;
   r->line_size ++;
   r->current = ec;
 }
@@ -133,6 +136,7 @@ void prepend_char(row_t *r, char c) {
     r->head = ec;
     r->current = ec;
 
+    r->is_dirty = true;
     r->line_size ++;
     return;
   }
@@ -156,6 +160,8 @@ void delete_char(row_t *r) {
     r->last = NULL;
 
     r->line_size --;
+    r->is_dirty = true;
+
     free(to_delete);
     return;
   }
@@ -175,6 +181,8 @@ void delete_char(row_t *r) {
   }
 
   r->line_size --;
+  r->is_dirty = true;
+
   free(to_delete);
 }
 
@@ -261,8 +269,8 @@ void move_current(buffer_t *buf, DIRECTION d) {
     case DOWN:
       move_down(buf);
       break;
-      case LEFT:
-        move_left(buf);
+    case LEFT:
+      move_left(buf);
       break;
     case RIGHT:
       move_right(buf);
