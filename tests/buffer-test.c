@@ -177,7 +177,7 @@ int test_move_chars(const char *filename) {
 }
 
 int main(void) {
-  const char *filename = "./tests/file.txt";
+  const char *filename = "./file.txt";
 
   test_chars(filename);
   test_rows(filename);
