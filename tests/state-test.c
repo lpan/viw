@@ -1,3 +1,7 @@
+/*
+ * Integration test for state, buffer and screen
+ */
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -16,7 +20,15 @@ int test_update_cursor(const char *filename) {
 
 int main(void) {
   const char *filename = "./file.txt";
+
+  // ncurses stuff
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
+
   test_update_cursor(filename);
 
+  endwin();
   return 0;
 }

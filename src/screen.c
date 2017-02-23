@@ -44,7 +44,7 @@ static void destroy_windows(window_t **windows) {
 screen_t *init_screen(size_t term_height) {
   screen_t *scr = malloc(sizeof(screen_t));
   scr->num_windows = term_height - 1;
-  scr->top_window = 0;
+  scr->top_row = 0;
   scr->windows = init_windows(term_height);
   scr->status_window = init_status_window(term_height);
 
