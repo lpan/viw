@@ -135,7 +135,8 @@ void backspace_char(state_t *st) {
 
   if (st->mode == INSERT_FRONT) {
     if (!r->current->prev) {
-      // delete line
+      join_row(st->buf);
+      update_scr_windows(st);
       return;
     }
 
@@ -145,7 +146,8 @@ void backspace_char(state_t *st) {
 
   if (st->mode == INSERT_BACK) {
     if (!r->current) {
-      // delete line
+      join_row(st->buf);
+      update_scr_windows(st);
       return;
     }
 

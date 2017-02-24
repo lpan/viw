@@ -97,6 +97,16 @@ static row_t *init_row(const char *line) {
   return r;
 }
 
+static void destroy_row(row_t *r) {
+  echar_t *c = r->head, *tmp;
+  while (c) {
+    tmp = c;
+    c = c->next;
+    free(tmp);
+  }
+  free(r);
+}
+
 buffer_t *init_buffer(const char *filename) {
   buffer_t *buf = malloc(sizeof(buffer_t));
 
@@ -339,6 +349,48 @@ void to_left(buffer_t *buf) {
   }
 }
 
+void join_row(buffer_t *buf) {
+  assert(buf->current->prev);
+
+  row_t *src = buf->current;
+  row_t *dest = src->prev;
+
+  if (dest->line_size == 0) {
+    move_current(buf, UP);
+    delete_row(buf);
+
+    return;
+  }
+
+  if (src->line_size == 0) {
+    delete_row(buf);
+    buf->current = dest;
+    dest->current = dest->last;
+    buf->current_row --;
+    buf->current_char = dest->line_size - 1;
+
+    return;
+  }
+
+  buf->current_char = dest->line_size;
+
+  dest->line_size += src->line_size;
+  dest->last->next = src->head;
+  src->head->prev = dest->last;
+
+  dest->current = src->head;
+  dest->last = src->last;
+
+  src->head = NULL;
+  src->last = NULL;
+
+  delete_row(buf);
+  move_current(buf, UP);
+}
+
+void seperate_row(buffer_t *buf, row_t *src, row_t *to_delete) {
+}
+
 void clear_row(row_t *r) {
   echar_t *ec = r->head;
   while (ec) {
@@ -350,16 +402,6 @@ void clear_row(row_t *r) {
   r->last = r->head;
   r->current = r->head;
   r->line_size = 0;
-}
-
-static void destroy_row(row_t *r) {
-  echar_t *c = r->head, *tmp;
-  while (c) {
-    tmp = c;
-    c = c->next;
-    free(tmp);
-  }
-  free(r);
 }
 
 void delete_row(buffer_t *buf) {
@@ -379,6 +421,7 @@ void delete_row(buffer_t *buf) {
     buf->current = to_delete->prev;
     buf->current->next = NULL;
     buf->last = buf->current;
+    buf->current_row --;
   } else {
     to_delete->prev->next = to_delete->next;
     to_delete->next->prev = to_delete->prev;

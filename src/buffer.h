@@ -87,6 +87,16 @@ void append_row(buffer_t *buf, const char *line);
 void prepend_row(buffer_t *buf, const char *line);
 
 /*
+ * Join current row and the row above
+ */
+void join_row(buffer_t *buf);
+
+/*
+ * When user press enter in insert mode, we seperate the line into two
+ */
+void seperate_row(buffer_t *buf, row_t *src, row_t *to_delete);
+
+/*
  * Move the cursor up/down/left/right
  * Do nothing if it reaches the end
  */
