@@ -36,3 +36,9 @@ void render_windows(screen_t *scr) {
     }
   }
 }
+
+void render_update(state_t *st) {
+  render_windows(st->scr);
+  move(st->cy, st->cx);
+  refresh();
+}

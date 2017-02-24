@@ -231,10 +231,32 @@ void prepend_row(buffer_t *buf, const char *line) {
   append_row(buf, line);
 }
 
+static void adjust_current_char(buffer_t *buf) {
+  row_t *r = buf->current;
+  echar_t *ec = r->head;
+
+  if (!ec) {
+    buf->current_char = 0;
+    return;
+  }
+
+  for (size_t i = 0; i < buf->current_char; i ++) {
+    if (!ec->next) {
+      buf->current_char = i;
+      break;
+    }
+
+    ec = ec->next;
+  }
+
+  r->current = ec;
+}
+
 static void move_up(buffer_t *buf) {
   if (buf->current->prev) {
     buf->current = buf->current->prev;
     buf->current_row --;
+    adjust_current_char(buf);
   }
 }
 
@@ -242,6 +264,7 @@ static void move_down(buffer_t *buf) {
   if (buf->current->next) {
     buf->current = buf->current->next;
     buf->current_row ++;
+    adjust_current_char(buf);
   }
 }
 

@@ -21,11 +21,15 @@ typedef struct state {
   screen_t *scr;
 
   size_t cx, cy;
+  size_t top_row;
+
   // insert/normal/visual/ex
   MODE mode;
 } state_t;
 
 state_t *init_state(const char *filename);
+
+void move_cursor(state_t *st, DIRECTION d);
 
 /*
  * Cursor position can be computed from:
@@ -38,7 +42,7 @@ void update_cursor_position(state_t *st);
  * Can be computed from:
  * st->cy, buf->current_row, scr->top_window, scr->num_windows
  */
-void update_display(state_t *st);
+void update_scr_windows(state_t *st);
 
 void destroy_state(state_t *st);
 

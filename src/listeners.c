@@ -6,7 +6,8 @@
 #include "ex.h"
 #include "listeners.h"
 
-// we want to preserve cursor position when exit from ex mode
+/*
+ * we want to preserve cursor position when exit from ex mode
 static void enter_ex(state_t *st, buffer_t *buf) {
   clear_row(buf->status_row);
   st->t_cx = st->cx;
@@ -21,6 +22,7 @@ static void exit_ex(state_t *st) {
   st->t_cx = 0;
   st->t_cy = 0;
 }
+*/
 
 /*
 // enter insert mode with "i"
@@ -105,10 +107,11 @@ static void exit_insert(state_t *st, buffer_t *buf) {
 }
 */
 
-void start_listener(state_t *st, buffer_t *buf) {
+void start_listener(state_t *st) {
   while (true) {
+    render_update(st);
     if (st->mode == NORMAL) {
-      start_normal_listener(st, buf);
+      start_normal_listener(st);
       /*
     } else if (st->mode == EX) {
       start_ex_listener(st, buf);
@@ -116,26 +119,24 @@ void start_listener(state_t *st, buffer_t *buf) {
       start_insert_listener(st, buf);
       */
     }
-
-    rerender(st);
   }
 }
 
-void start_normal_listener(state_t *st, buffer_t *buf) {
+void start_normal_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     // navigations
     case 'j':
-      move_current(buf, DOWN);
+      move_cursor(st, DOWN);
       break;
     case 'k':
-      move_current(buf, UP);
+      move_cursor(st, UP);
       break;
     case 'h':
-      move_current(buf, LEFT);
+      move_cursor(st, LEFT);
       break;
     case 'l':
-      move_current(buf, RIGHT);
+      move_cursor(st, RIGHT);
       break;
     /*
     case 'x':

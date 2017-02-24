@@ -13,11 +13,13 @@ state_t *init_state(const char *filename) {
   st->mode = NORMAL;
   st->cx = 0;
   st->cy = 0;
+  st->top_row = 0;
 
   st->buf = init_buffer(filename);
   st->scr = init_screen(LINES);
 
   update_cursor_position(st);
+  update_scr_windows(st);
 
   return st;
 }
@@ -28,11 +30,30 @@ void destroy_state(state_t *st) {
   free(st);
 }
 
+int update_top_row(state_t *st) {
+  size_t current_row = st->buf->current_row;
+  size_t num_windows = st->scr->num_windows;
+
+  // scroll down
+  if (current_row >= st->top_row + num_windows) {
+    st->top_row = current_row - num_windows + 1;
+    return 1;
+  }
+
+  // scroll up
+  if (current_row < st->top_row) {
+    st->top_row = current_row;
+    return 1;
+  }
+
+  return 0;
+}
+
 void update_cursor_position(state_t *st) {
   size_t line_size = st->buf->current->line_size;
   size_t current_row = st->buf->current_row;
   size_t current_char = st->buf->current_char;
-  size_t top_row = st->scr->top_row;
+  size_t top_row = st->top_row;
 
   st->cy = current_row - top_row;
 
@@ -47,34 +68,48 @@ void update_cursor_position(state_t *st) {
 
 /*
  * We want to update the display when:
- * - scroll up/down
+ * - scroll up/down (update_top_row() -> true)
  * - insert/delete row(s)
  * - insert at the bottom which triggers a "scroll"
  */
-void update_display(state_t *st) {
+void update_scr_windows(state_t *st) {
   size_t current_row = st->buf->current_row;
-  size_t top_row = st->scr->top_row;
+  size_t top_row = st->top_row;
   size_t num_windows = st->scr->num_windows;
 
   window_t **windows = st->scr->windows;
 
   row_t *r = st->buf->current;
 
-  for (size_t i = top_row; i < current_row; i ++) {
-    windows[top_row - i]->r = r;
+  for (size_t i = top_row; i <= current_row; i ++) {
+    windows[current_row - i]->r = r;
+    r->is_dirty = true;
     r = r->prev;
   }
 
   r = st->buf->current;
 
-  for (size_t i = current_row; i < num_windows; i ++) {
+  for (size_t i = current_row; i < top_row + num_windows; i ++) {
     if (r) {
       windows[i - top_row]->r = r;
+      r->is_dirty = true;
       r = r->next;
     } else {
       windows[i - top_row]->r = NULL;
     }
   }
+}
+
+void move_cursor(state_t *st, DIRECTION d) {
+  move_current(st->buf, d);
+
+  bool scrolled = update_top_row(st);
+
+  if (scrolled) {
+    update_scr_windows(st);
+  }
+
+  update_cursor_position(st);
 }
 
 /*
@@ -104,60 +139,6 @@ void backspace_char(row_t *r) {
   if (r->current != r->last) {
     st->cx --;
     r->current = r->current->prev;
-  }
-}
-
-row_t *next_row(row_t *r) {
-  if (r->next) {
-    return r = r->next;
-  }
-  return r;
-}
-
-row_t *prev_row(row_t *r) {
-  if (r->prev) {
-    return r = r->prev;
-  }
-  return r;
-}
-
- * Handle vertical scrolling
- * It's technically O(1) since g_screen->num_windows is a constant ;)
-static void adjust_windows(void) {
-  // scroll down
-  if (st->cy >= g_screen->top_window + g_screen->num_windows) {
-    row_t *r = st->current;
-    g_screen->top_window ++;
-
-    for (size_t i = 0; i < g_screen->num_windows; i ++) {
-      window_t *w = g_screen->windows[g_screen->num_windows - i - 1];
-      w->r = r;
-      r->win = w;
-      r = r->prev;
-    }
-
-    st->r_cy --;
-
-    // render from bottom to top
-    render_all(prev_row);
-  }
-
-  // scroll up
-  if (st->cy < g_screen->top_window) {
-    row_t *r = st->current;
-    g_screen->top_window --;
-
-    for (size_t i = 0; i < g_screen->num_windows; i ++) {
-      window_t *w = g_screen->windows[i];
-      w->r = r;
-      r->win = w;
-      r = r->next;
-    }
-
-    st->r_cy ++;
-
-    // render from top to bottom
-    render_all(next_row);
   }
 }
 */

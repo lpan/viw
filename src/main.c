@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "buffer.h"
-#include "screen.h"
 #include "listeners.h"
-#include "render.h"
+#include "state.h"
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -15,19 +13,15 @@ int main(int argc, char **argv) {
 
   // ncurses stuff
   initscr();
-  raw();
+  // raw();
   keypad(stdscr, TRUE);
   noecho();
+  refresh();
 
   state_t *st = init_state(filename);
 
-  update_display(st);
-  render_windows(st->scr);
-
-  wgetch(st->scr->windows[0]->w);
-  // start_listener(st);
+  start_listener(st);
 
   endwin();
-
   return 0;
 }

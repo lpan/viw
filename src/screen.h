@@ -13,8 +13,6 @@ typedef struct window {
 typedef struct screen {
   // total number of non status windows displayed
   size_t num_windows;
-  // index of the first row displayed
-  size_t top_row;
 
   // each ncurses window represents a line
   window_t **windows;
