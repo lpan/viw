@@ -32,62 +32,7 @@ static void read_file(buffer_t *buf, const char *filename) {
   }
 }
 
-/*
- * Init a row with a NULL char at the beginning
- */
-static row_t *init_row(const char *line) {
-  row_t *r = malloc(sizeof(row_t));
-
-  r->win = NULL;
-  r->next = NULL;
-  r->prev = NULL;
-  r->line_size = 0;
-  r->is_dirty = true;
-
-  r->head = NULL;
-  r->last = NULL;
-  r->current = NULL;
-
-  if (!line) {
-    return r;
-  }
-
-  for (size_t i = 0; i < strlen(line); i ++) {
-    append_char(r, line[i]);
-  }
-
-  // set current to be the first char
-  r->current = r->head;
-  return r;
-}
-
-buffer_t *init_buffer(const char *filename) {
-  buffer_t *buf = malloc(sizeof(buffer_t));
-
-  buf->num_rows = 0;
-  buf->head = NULL;
-  buf->last = NULL;
-  buf->current = NULL;
-  buf->status_row = init_row(NULL);
-
-  buf->current_row = 0;
-  buf->current_char = 0;
-
-  buf->is_dirty = false;
-  buf->filename = filename;
-
-  read_file(buf, filename);
-
-  // we want to start at the top when user opens up a new file
-  buf->current = buf->head;
-  // Set current to the first char of line
-  // TODO set current to the first non space char
-  buf->current->current = buf->current->head;
-
-  return buf;
-}
-
-void append_char(row_t *r, char c) {
+static void add_char(row_t *r, char c) {
   echar_t *ec = malloc(sizeof(echar_t));
   echar_t *next = NULL;
   echar_t *prev = NULL;
@@ -124,7 +69,74 @@ void append_char(row_t *r, char c) {
   r->current = ec;
 }
 
-void prepend_char(row_t *r, char c) {
+/*
+ * Init a row with a NULL char at the beginning
+ */
+static row_t *init_row(const char *line) {
+  row_t *r = malloc(sizeof(row_t));
+
+  r->win = NULL;
+  r->next = NULL;
+  r->prev = NULL;
+  r->line_size = 0;
+  r->is_dirty = true;
+
+  r->head = NULL;
+  r->last = NULL;
+  r->current = NULL;
+
+  if (!line) {
+    return r;
+  }
+
+  for (size_t i = 0; i < strlen(line); i ++) {
+    add_char(r, line[i]);
+  }
+
+  // set current to be the first char
+  r->current = r->head;
+  return r;
+}
+
+buffer_t *init_buffer(const char *filename) {
+  buffer_t *buf = malloc(sizeof(buffer_t));
+
+  buf->num_rows = 0;
+  buf->head = NULL;
+  buf->last = NULL;
+  buf->current = NULL;
+  buf->status_row = init_row(NULL);
+
+  buf->current_row = 0;
+  buf->current_char = 0;
+
+  buf->is_dirty = false;
+  buf->filename = filename;
+
+  read_file(buf, filename);
+
+  // we want to start at the top when user opens up a new file
+  buf->current = buf->head;
+  // Set current to the first char of line
+  // TODO set current to the first non space char
+  buf->current->current = buf->current->head;
+
+  return buf;
+}
+
+void append_char(buffer_t *buf, char c) {
+  if (buf->current->line_size != 0) {
+    buf->current_char ++;
+  }
+
+  add_char(buf->current, c);
+}
+
+void prepend_char(buffer_t *buf, char c) {
+  row_t *r = buf->current;
+
+  assert(r->line_size > 0);
+
   // insert at head
   if (r->head && r->current == r->head) {
     echar_t *ec = malloc(sizeof(echar_t));
@@ -135,18 +147,22 @@ void prepend_char(row_t *r, char c) {
     r->head->prev = ec;
     r->head = ec;
     r->current = ec;
+    r->current = r->current->next;
 
+    buf->current_char ++;
     r->is_dirty = true;
     r->line_size ++;
     return;
   }
 
   r->current = r->current->prev;
-
-  append_char(r, c);
+  append_char(buf, c);
+  r->current = r->current->next;
 }
 
-void delete_char(row_t *r) {
+void delete_char(buffer_t *buf) {
+  row_t *r = buf->current;
+
   if (r->line_size == 0) {
     return;
   }
@@ -174,6 +190,7 @@ void delete_char(row_t *r) {
     r->current = to_delete->prev;
     r->last = r->current;
     r->last->next = NULL;
+    buf->current_char --;
   } else {
     r->current = to_delete->next;
     r->current->prev = to_delete->prev;
@@ -300,6 +317,19 @@ void move_current(buffer_t *buf, DIRECTION d) {
       break;
     default:
       break;
+  }
+}
+
+void to_right(buffer_t *buf) {
+  for (size_t i = buf->current_char; i < buf->current->line_size; i ++) {
+    move_current(buf, RIGHT);
+  }
+}
+
+void to_left(buffer_t *buf) {
+  size_t cur = buf->current_char;
+  for (size_t i = 0; i < cur; i ++) {
+    move_current(buf, LEFT);
   }
 }
 

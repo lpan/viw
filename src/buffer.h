@@ -54,19 +54,19 @@ buffer_t *init_buffer(const char *filename);
 /*
  * Append char to line then set the current char to new char
  */
-void append_char(row_t *r, char c);
+void append_char(buffer_t *buf, char c);
 
 /*
  * Prepend char to line then set the current char to new char
  */
-void prepend_char(row_t *r, char c);
+void prepend_char(buffer_t *buf, char c);
 
 /*
  * Delete current char and set 'current' to point to next char
  * if only NULL char is present, do nothing
  * if next char is NULL, point to the previous char
  */
-void delete_char(row_t *r);
+void delete_char(buffer_t *r);
 
 /*
  * Add an empty line below the current line and set current to the new line
@@ -83,6 +83,16 @@ void prepend_row(buffer_t *buf, const char *line);
  * Do nothing if it reaches the end
  */
 void move_current(buffer_t *buf, DIRECTION d);
+
+/*
+ * Move cursor all the way to the right
+ */
+void to_right(buffer_t *buf);
+
+/*
+ * Move cursor all the way to the left
+ */
+void to_left(buffer_t *buf);
 
 /*
  * Make the row empty

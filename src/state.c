@@ -64,6 +64,10 @@ void update_cursor_position(state_t *st) {
   } else {
     st->cx = current_char;
   }
+
+  if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
+    st->cx ++;
+  }
 }
 
 /*
@@ -108,7 +112,10 @@ void move_cursor(state_t *st, DIRECTION d) {
   if (scrolled) {
     update_scr_windows(st);
   }
+}
 
+void insert_char(state_t *st, char c) {
+  append_char(st->buf, c);
   update_cursor_position(st);
 }
 

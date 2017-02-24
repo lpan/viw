@@ -11,7 +11,8 @@ struct window;
 
 typedef enum MODE {
   NORMAL,
-  INSERT,
+  INSERT_FRONT,
+  INSERT_BACK,
   VISUAL,
   EX
 } MODE;
@@ -43,6 +44,8 @@ void update_cursor_position(state_t *st);
  * st->cy, buf->current_row, scr->top_window, scr->num_windows
  */
 void update_scr_windows(state_t *st);
+
+void insert_char(state_t *st, char c);
 
 void destroy_state(state_t *st);
 

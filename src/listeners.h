@@ -15,6 +15,6 @@ void start_normal_listener(state_t *st);
 
 void start_ex_listener(state_t *st);
 
-void start_insert_listener(state_t *st);
+void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char));
 
 #endif

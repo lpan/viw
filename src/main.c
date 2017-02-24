@@ -11,6 +11,9 @@ int main(int argc, char **argv) {
 
   char *filename = argv[1];
 
+  // elim escape key delay
+  putenv("ESCDELAY=0");
+
   // ncurses stuff
   initscr();
   // raw();
