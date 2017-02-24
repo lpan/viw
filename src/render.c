@@ -23,6 +23,8 @@ void render_window(window_t *w) {
 }
 
 void render_windows(screen_t *scr) {
+  render_window(scr->status_window);
+
   for (size_t i = 0; i < scr->num_windows; i ++) {
     window_t *w = scr->windows[i];
 

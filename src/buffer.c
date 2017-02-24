@@ -32,7 +32,7 @@ static void read_file(buffer_t *buf, const char *filename) {
   }
 }
 
-static void add_char(row_t *r, char c) {
+void add_char(row_t *r, char c) {
   echar_t *ec = malloc(sizeof(echar_t));
   echar_t *next = NULL;
   echar_t *prev = NULL;
@@ -75,7 +75,6 @@ static void add_char(row_t *r, char c) {
 static row_t *init_row(const char *line) {
   row_t *r = malloc(sizeof(row_t));
 
-  r->win = NULL;
   r->next = NULL;
   r->prev = NULL;
   r->line_size = 0;
@@ -341,7 +340,6 @@ void clear_row(row_t *r) {
     free(tmp);
   }
 
-  r->win = NULL;
   r->last = r->head;
   r->current = r->head;
   r->line_size = 0;

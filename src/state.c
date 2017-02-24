@@ -68,6 +68,11 @@ void update_cursor_position(state_t *st) {
   if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
     st->cx ++;
   }
+
+  if (st->mode == EX) {
+    st->cy = st->scr->num_windows;
+    st->cx = st->buf->status_row->line_size;
+  }
 }
 
 /*
@@ -77,6 +82,11 @@ void update_cursor_position(state_t *st) {
  * - insert at the bottom which triggers a "scroll"
  */
 void update_scr_windows(state_t *st) {
+  // link status window and its buffer
+  if (!st->scr->status_window->r) {
+    st->scr->status_window->r = st->buf->status_row;
+  }
+
   size_t current_row = st->buf->current_row;
   size_t top_row = st->top_row;
   size_t num_windows = st->scr->num_windows;

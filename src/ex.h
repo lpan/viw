@@ -3,6 +3,6 @@
 
 #include "state.h"
 
-void ex_match_action(row_t *status);
+void ex_match_action(state_t *st);
 
 #endif

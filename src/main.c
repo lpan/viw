@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 
   // ncurses stuff
   initscr();
-  // raw();
+  raw();
   keypad(stdscr, TRUE);
   noecho();
   refresh();

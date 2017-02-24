@@ -5,7 +5,6 @@
 #include "screen.h"
 #include "ex.h"
 
-/*
 #define CMP1(s, s1) (strcmp(s, s1) == 0)
 #define CMP2(s, s1, s2) (strcmp(s, s1) == 0 || strcmp(s, s2) == 0)
 
@@ -22,21 +21,21 @@ static char *to_string(echar_t *head, size_t length) {
   return result;
 }
 
-static char *row_to_string(void) {
-  size_t buffer_size = g_state->num_rows;
-  row_t *r = g_state->head;
+static char *row_to_string(buffer_t *buf) {
+  size_t buffer_size = buf->num_rows;
+  row_t *r = buf->head;
 
-  for (size_t i = 0; r && i < g_state->num_rows; i ++) {
+  for (size_t i = 0; r && i < buf->num_rows; i ++) {
     buffer_size += r->line_size;
     r = r->next;
   }
 
   char *result = malloc(buffer_size * sizeof(char));
-  r = g_state->head;
+  r = buf->head;
 
   strcpy(result, "");
   while (r) {
-    char *line = to_string(r->head->next, r->line_size);
+    char *line = to_string(r->head, r->line_size);
     strcat(result, line);
 
     // no newline for the last line
@@ -50,35 +49,34 @@ static char *row_to_string(void) {
   return result;
 }
 
-static void quit(void) {
-  destroy_editor();
-  destroy_screen();
+static void quit(state_t *st) {
+  destroy_state(st);
+  endwin();
   exit(0);
 }
 
-static void save(void) {
-  char *buffer = row_to_string();
+static void save(state_t *st) {
+  char *buf = row_to_string(st->buf);
 
-  FILE *fp = fopen(g_state->filename, "w");
-  fputs(buffer, fp);
-  free(buffer);
+  FILE *fp = fopen(st->buf->filename, "w");
+  fputs(buf, fp);
+  free(buf);
   fclose(fp);
 }
 
-void ex_match_action(row_t *status) {
-  // first char is the null char, second char is ':'
-  char *command = to_string(status->head->next->next, status->line_size);
+void ex_match_action(state_t *st) {
+  // first char is ':'
+  char *command = to_string(st->buf->status_row->head->next, st->buf->status_row->line_size);
 
   if (CMP2(command, "q", "quit")) {
     free(command);
-    quit();
+    quit(st);
   } else if (CMP1(command, "w")) {
     free(command);
-    save();
+    save(st);
   } else if (CMP1(command, "wq")) {
     free(command);
-    save();
-    quit();
+    save(st);
+    quit(st);
   }
 }
-*/

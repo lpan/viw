@@ -10,12 +10,22 @@ void start_listener(state_t *st) {
   while (true) {
     update_cursor_position(st);
     render_update(st);
-    if (st->mode == NORMAL) {
-      start_normal_listener(st);
-    } else if (st->mode == INSERT_FRONT) {
-      start_insert_listener(st, prepend_char);
-    } else if (st->mode == INSERT_BACK) {
-      start_insert_listener(st, append_char);
+
+    switch (st->mode) {
+      case NORMAL:
+        start_normal_listener(st);
+        break;
+      case INSERT_FRONT:
+        start_insert_listener(st, prepend_char);
+        break;
+      case INSERT_BACK:
+        start_insert_listener(st, append_char);
+        break;
+      case EX:
+        start_ex_listener(st);
+        break;
+      case VISUAL:
+        break;
     }
   }
 }
@@ -45,14 +55,8 @@ void start_normal_listener(state_t *st) {
     case '0':
       to_left(st->buf);
       break;
-    /*
-    case ':':
-      st->mode = EX;
-      enter_ex();
-      add_char(st->status, ':');
-      render_window(g_screen->status_window, st->status);
-      break;
-      */
+    case 'I':
+      to_left(st->buf);
     case 'i':
       if (st->buf->current->line_size == 0) {
         st->mode = INSERT_BACK;
@@ -60,52 +64,40 @@ void start_normal_listener(state_t *st) {
         st->mode = INSERT_FRONT;
       }
       break;
+    case 'A':
+      to_right(st->buf);
     case 'a':
       st->mode = INSERT_BACK;
       break;
-    case 'A':
-      st->mode = INSERT_BACK;
-      to_right(st->buf);
-      break;
-    case 'I':
-      if (st->buf->current->line_size == 0) {
-        st->mode = INSERT_BACK;
-      } else {
-        st->mode = INSERT_FRONT;
-      }
-      to_left(st->buf);
+    case ':':
+      st->mode = EX;
+      clear_row(st->buf->status_row);
+      add_char(st->buf->status_row, ':');
       break;
     default:
       break;
   }
 }
 
-/*
-void start_ex_listener(state_t *st, buffer_t *buf) {
+void start_ex_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case '\n':
-      ex_match_action(st->status);
+      ex_match_action(st);
       st->mode = NORMAL;
-      exit_ex();
       break;
     case KEY_BACKSPACE:
-      delete_char(st->status);
       break;
     default:
-      add_char(st->status, (char) ch);
+      add_char(st->buf->status_row, (char) ch);
       break;
   }
 
   // exit EX mode when status bar is empty
-  if (st->status->line_size == 0) {
+  if (st->buf->status_row->line_size == 0) {
     st->mode = NORMAL;
-    exit_ex();
   }
-
-  render_window(g_screen->status_window, st->status);
 }
-*/
 
 void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
   int ch = getch();

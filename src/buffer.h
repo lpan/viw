@@ -24,8 +24,6 @@ typedef struct row {
   size_t line_size;
   bool is_dirty;
 
-  struct window *win;
-
   struct row *prev;
   struct row *next;
 } row_t;
@@ -50,6 +48,11 @@ typedef struct buffer {
 } buffer_t;
 
 buffer_t *init_buffer(const char *filename);
+
+/*
+ * Primitive add char
+ */
+void add_char(row_t *r, char c);
 
 /*
  * Append char to line then set the current char to new char
