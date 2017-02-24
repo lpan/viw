@@ -124,38 +124,43 @@ void move_cursor(state_t *st, DIRECTION d) {
   }
 }
 
-void insert_char(state_t *st, char c) {
-  append_char(st->buf, c);
-  update_cursor_position(st);
+void backspace_char(state_t *st) {
+  buffer_t *buf = st->buf;
+  row_t *r = buf->current;
+
+  if (st->mode == INSERT_FRONT) {
+    if (!r->current->prev) {
+      // delete line
+      return;
+    }
+
+    move_current(st->buf, LEFT);
+    delete_char(buf);
+  }
+
+  if (st->mode == INSERT_BACK) {
+    if (!r->current) {
+      // delete line
+      return;
+    }
+
+    if (buf->current_char == 0) {
+      if (r->line_size == 1) {
+        delete_char(st->buf);
+        return;
+      }
+
+      // back insert mode cant handle this situation
+      st->mode = INSERT_FRONT;
+      move_current(st->buf, RIGHT);
+      backspace_char(st);
+      return;
+    }
+
+    delete_char(buf);
+
+    if (r->current->next) {
+      move_current(st->buf, LEFT);
+    }
+  }
 }
-
-/*
- * delete_char() insert/ex mode version
- *
- * Always adjust cursor position
- *
- * Delete the char before 'current'
- * Delete line when current is the NULL char and append the rest of the line to
- * the previous line
-void backspace_char(row_t *r) {
-  if (r->current->c == '\0') {
-    // delete line
-    return;
-  }
-
-  delete_char(r);
-
-  // if current is set to the NULL char
-  // it means we now have an empty row
-  if (r->current->c == '\0') {
-    st->cx --;
-    return;
-  }
-
-  // delete char will not adjust cursor if next char is not NULL
-  if (r->current != r->last) {
-    st->cx --;
-    r->current = r->current->prev;
-  }
-}
-*/

@@ -105,6 +105,7 @@ void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
     case '\n':
       break;
     case KEY_BACKSPACE:
+      backspace_char(st);
       break;
     case KEY_ESC:
       if (st->mode == INSERT_FRONT) {

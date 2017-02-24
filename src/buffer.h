@@ -69,7 +69,7 @@ void prepend_char(buffer_t *buf, char c);
  * if only NULL char is present, do nothing
  * if next char is NULL, point to the previous char
  */
-void delete_char(buffer_t *r);
+void delete_char(buffer_t *buf);
 
 /*
  * Add an empty line below the current line and set current to the new line

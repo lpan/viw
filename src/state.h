@@ -45,7 +45,10 @@ void update_cursor_position(state_t *st);
  */
 void update_scr_windows(state_t *st);
 
-void insert_char(state_t *st, char c);
+/*
+ * delete_char() insert/ex mode version
+ */
+void backspace_char(state_t *st);
 
 void destroy_state(state_t *st);
 
