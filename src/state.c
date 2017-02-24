@@ -124,6 +124,11 @@ void move_cursor(state_t *st, DIRECTION d) {
   }
 }
 
+void handle_enter(state_t *st) {
+  seperate_row(st->buf);
+  update_scr_windows(st);
+}
+
 void backspace_char(state_t *st) {
   buffer_t *buf = st->buf;
   row_t *r = buf->current;

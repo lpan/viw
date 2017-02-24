@@ -104,6 +104,7 @@ void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
   int ch = getch();
   switch (ch) {
     case '\n':
+      handle_enter(st);
       break;
     case KEY_BACKSPACE:
       backspace_char(st);

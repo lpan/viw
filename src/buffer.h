@@ -94,7 +94,7 @@ void join_row(buffer_t *buf);
 /*
  * When user press enter in insert mode, we seperate the line into two
  */
-void seperate_row(buffer_t *buf, row_t *src, row_t *to_delete);
+void seperate_row(buffer_t *buf);
 
 /*
  * Move the cursor up/down/left/right

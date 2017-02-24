@@ -116,9 +116,6 @@ buffer_t *init_buffer(const char *filename) {
   buf->current = NULL;
   buf->status_row = init_row(NULL);
 
-  buf->current_row = 0;
-  buf->current_char = 0;
-
   buf->is_dirty = false;
   buf->filename = filename;
 
@@ -129,6 +126,9 @@ buffer_t *init_buffer(const char *filename) {
   // Set current to the first char of line
   // TODO set current to the first non space char
   buf->current->current = buf->current->head;
+
+  buf->current_row = 0;
+  buf->current_char = 0;
 
   return buf;
 }
@@ -241,6 +241,7 @@ void append_row(buffer_t *buf, const char *line) {
   r->next = next;
   r->prev = prev;
 
+  buf->current_row ++;
   buf->num_rows ++;
   buf->current = r;
 }
@@ -388,7 +389,28 @@ void join_row(buffer_t *buf) {
   move_current(buf, UP);
 }
 
-void seperate_row(buffer_t *buf, row_t *src, row_t *to_delete) {
+void seperate_row(buffer_t *buf) {
+  row_t *src = buf->current;
+  append_row(buf, NULL);
+  row_t *dest = buf->current;
+
+  if (src->line_size == 0) {
+    return;
+  }
+
+  dest->line_size = src->line_size - buf->current_char;
+  src->line_size = buf->current_char;
+
+  dest->head = src->current;
+  dest->last = src->last;
+
+  src->last = src->current->prev;
+
+  dest->head->prev = NULL;
+  src->last->next = NULL;
+
+  dest->current = dest->head;
+  buf->current_char = 0;
 }
 
 void clear_row(row_t *r) {
