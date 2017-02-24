@@ -3,155 +3,130 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
-#include "render.h"
 #include "screen.h"
+#include "buffer.h"
 #include "state.h"
 
-state_t *g_state;
+state_t *init_state(const char *filename) {
+  state_t *st = malloc(sizeof(state_t));
 
-static void destroy_row(row_t *r) {
-  echar_t *c = r->head, *tmp;
-  while (c) {
-    tmp = c;
-    c = c->next;
-    free(tmp);
-  }
-  free(r);
+  st->mode = NORMAL;
+  st->cx = 0;
+  st->cy = 0;
+  st->top_row = 0;
+
+  st->buf = init_buffer(filename);
+  st->scr = init_screen(LINES);
+
+  update_cursor_position(st);
+  update_scr_windows(st);
+
+  return st;
 }
 
-void destroy_state(void) {
-  row_t *r = g_state->head, *tmp;
-  while (r) {
-    tmp = r;
-    r = r->next;
-    destroy_row(tmp);
-  }
-
-  free(g_state);
-  g_state = NULL;
+void destroy_state(state_t *st) {
+  destroy_buffer(st->buf);
+  destroy_screen(st->scr);
+  free(st);
 }
 
-static void append_char(row_t *r, char c) {
-  echar_t *ec = malloc(sizeof(echar_t));
-  echar_t *next = NULL;
-  echar_t *prev = NULL;
+int update_top_row(state_t *st) {
+  size_t current_row = st->buf->current_row;
+  size_t num_windows = st->scr->num_windows;
 
-  ec->c = c;
-  ec->prev = NULL;
-  ec->next = NULL;
+  // scroll down
+  if (current_row >= st->top_row + num_windows) {
+    st->top_row = current_row - num_windows + 1;
+    return 1;
+  }
 
-  if (r->current == r->last) {
-    prev = r->current;
-    prev->next = ec;
-    r->last = ec;
+  // scroll up
+  if (current_row < st->top_row) {
+    st->top_row = current_row;
+    return 1;
+  }
+
+  return 0;
+}
+
+void update_cursor_position(state_t *st) {
+  size_t line_size = st->buf->current->line_size;
+  size_t current_row = st->buf->current_row;
+  size_t current_char = st->buf->current_char;
+  size_t top_row = st->top_row;
+
+  st->cy = current_row - top_row;
+
+  if (line_size == 0) {
+    st->cx = 0;
+  } else if (st->cx >= line_size) {
+    st->cx = line_size - 1;
   } else {
-    prev = r->current;
-    next = r->current->next;
-    prev->next = ec;
-    next->prev = ec;
+    st->cx = current_char;
   }
 
-  ec->next = next;
-  ec->prev = prev;
+  if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
+    st->cx ++;
+  }
 
-  r->line_size ++;
-  r->current = ec;
+  if (st->mode == EX) {
+    st->cy = st->scr->num_windows;
+    st->cx = st->buf->status_row->line_size;
+  }
 }
 
 /*
- * There is always a NULL char at the beginning of every row
+ * We want to update the display when:
+ * - scroll up/down (update_top_row() -> true)
+ * - insert/delete row(s)
+ * - insert at the bottom which triggers a "scroll"
  */
-static row_t *init_row(const char *buffer) {
-  row_t *r = malloc(sizeof(row_t));
-
-  // null char
-  echar_t *ec = malloc(sizeof(echar_t));
-  ec->c = '\0';
-  ec->prev = NULL;
-  ec->next = NULL;
-
-  r->win = NULL;
-  r->next = NULL;
-  r->prev = NULL;
-  r->line_size = 0;
-
-  r->head = ec;
-  r->last = ec;
-  r->current = ec;
-
-  if (!buffer) {
-    return r;
+void update_scr_windows(state_t *st) {
+  // link status window and its buffer
+  if (!st->scr->status_window->r) {
+    st->scr->status_window->r = st->buf->status_row;
   }
 
-  for (size_t i = 0; i < strlen(buffer); i ++) {
-    append_char(r, buffer[i]);
-  }
-  return r;
-}
+  size_t current_row = st->buf->current_row;
+  size_t top_row = st->top_row;
+  size_t num_windows = st->scr->num_windows;
 
-void init_state(const char *filename) {
-  g_state = malloc(sizeof(state_t));
+  window_t **windows = st->scr->windows;
 
-  g_state->cx = 0;
-  g_state->cy = 0;
-  g_state->r_cy = 0;
+  row_t *r = st->buf->current;
 
-  g_state->t_cx = 0;
-  g_state->t_cy = 0;
-
-  g_state->is_dirty = false;
-  g_state->filename = filename;
-
-  g_state->num_rows = 0;
-  g_state->status = init_row(NULL);
-  g_state->head = NULL;
-  g_state->last = NULL;
-  g_state->current = NULL;
-
-  g_state->mode = NORMAL;
-}
-
-void add_char(row_t *r, char c) {
-  append_char(r, c);
-  g_state->cx ++;
-}
-
-/*
- * delete current char and set 'current' to point to next char
- *
- * Adjust the cursor position only when next char is NULL
- *
- * if only NULL char is present, do nothing
- * if next char is NULL, point to the previous char
- */
-void delete_char(row_t *r) {
-  if (r->line_size == 0) {
-    return;
+  for (size_t i = top_row; i <= current_row; i ++) {
+    windows[current_row - i]->r = r;
+    r->is_dirty = true;
+    r = r->prev;
   }
 
-  echar_t *to_delete = r->current;
+  r = st->buf->current;
 
-  if (to_delete == r->head) {
-    r->current = to_delete->next;
-    r->head = r->current;
-    r->head->prev = NULL;
-  } else if (to_delete == r->last) {
-    r->current = to_delete->prev;
-    r->last = r->current;
-    r->last->next = NULL;
-
-    // handle empty row
-    if (r->current->c != '\0') {
-      g_state->cx --;
+  for (size_t i = current_row; i < top_row + num_windows; i ++) {
+    if (r) {
+      windows[i - top_row]->r = r;
+      r->is_dirty = true;
+      r = r->next;
+    } else {
+      windows[i - top_row]->r = NULL;
     }
-  } else {
-    r->current = to_delete->next;
-    r->current->prev = to_delete->prev;
-    to_delete->prev->next = r->current;
   }
+}
 
-  r->line_size --;
-  free(to_delete);
+void move_cursor(state_t *st, DIRECTION d) {
+  move_current(st->buf, d);
+
+  bool scrolled = update_top_row(st);
+
+  if (scrolled) {
+    update_scr_windows(st);
+  }
+}
+
+void insert_char(state_t *st, char c) {
+  append_char(st->buf, c);
+  update_cursor_position(st);
 }
 
 /*
@@ -162,7 +137,6 @@ void delete_char(row_t *r) {
  * Delete the char before 'current'
  * Delete line when current is the NULL char and append the rest of the line to
  * the previous line
- */
 void backspace_char(row_t *r) {
   if (r->current->c == '\0') {
     // delete line
@@ -174,233 +148,14 @@ void backspace_char(row_t *r) {
   // if current is set to the NULL char
   // it means we now have an empty row
   if (r->current->c == '\0') {
-    g_state->cx --;
+    st->cx --;
     return;
   }
 
   // delete char will not adjust cursor if next char is not NULL
   if (r->current != r->last) {
-    g_state->cx --;
+    st->cx --;
     r->current = r->current->prev;
   }
 }
-
-// insert row after current
-void append_row(const char *buffer) {
-  row_t *r = init_row(buffer);
-  row_t *prev = NULL;
-  row_t *next = NULL;
-
-  if (g_state->num_rows == 0) {
-    g_state->head = r;
-    g_state->last= r;
-  } else if (g_state->current == g_state->last) {
-    prev = g_state->current;
-    prev->next = r;
-    g_state->last = r;
-  } else {
-    prev = g_state->current;
-    next = g_state->current->next;
-    prev->next = r;
-    next->prev = r;
-  }
-
-  r->next = next;
-  r->prev = prev;
-
-  g_state->num_rows ++;
-  g_state->current = r;
-}
-
-// insert row before current
-void prepend_row(const char *buffer) {
-  row_t *r = init_row(buffer);
-  row_t *prev = NULL;
-  row_t *next = NULL;
-
-  if (g_state->num_rows == 0) {
-    g_state->head = r;
-    g_state->last= r;
-  } else if (g_state->current == g_state->head) {
-    next = g_state->current;
-    next->prev = r;
-    g_state->head = r;
-  } else {
-    prev = g_state->current->prev;
-    next = g_state->current;
-    prev->next = r;
-    next->prev = r;
-  }
-
-  r->next = next;
-  r->prev = prev;
-
-  g_state->num_rows ++;
-  g_state->current = r;
-}
-
-/*
- * Delete current row and reset 'current' to point to the next row.
- * If next is null then set it to previous
- * If there is only one row left, we simply "clear" the row
- */
-void delete_row(void) {
-  assert(g_state->num_rows > 0);
-  row_t *to_delete = g_state->current;
-
-  if (g_state->num_rows == 1) {
-    clear_row(g_state->current);
-    return;
-  }
-
-  if (to_delete == g_state->head) {
-    g_state->current = to_delete->next;
-    g_state->current->prev = NULL;
-    g_state->head = g_state->current;
-  } else if (to_delete == g_state->last) {
-    g_state->current = to_delete->prev;
-    g_state->current->next = NULL;
-    g_state->last = g_state->current;
-  } else {
-    to_delete->prev->next = to_delete->next;
-    to_delete->next->prev = to_delete->prev;
-    g_state->current = to_delete->next;
-  }
-
-  g_state->num_rows --;
-  destroy_row(to_delete);
-}
-
-void clear_row(row_t *r) {
-  echar_t *ec = r->head->next;
-  while (ec) {
-    echar_t *tmp = ec;
-    ec = ec->next;
-    free(tmp);
-  }
-
-  r->win = NULL;
-  r->last = r->head;
-  r->current = r->head;
-  r->line_size = 0;
-}
-
-/* Navigations */
-
-/*
- * Handle situations such as cx > row->line_size
- */
-static void adjust_x_cursor(void) {
-  size_t cx = 0;
-  row_t *cur_row = g_state->current;
-
-  // handle empty row case
-  if (!cur_row->head->next) {
-    g_state->cx = cx;
-    return;
-  }
-
-  cur_row->current = cur_row->head->next;
-
-  for (size_t i = 0;
-      i < g_state->cx &&
-      cur_row->current &&
-      cur_row->current->next;
-      i ++) {
-    cur_row->current = cur_row->current->next;
-    cx ++;
-  }
-  g_state->cx = cx;
-}
-
-row_t *next_row(row_t *r) {
-  if (r->next) {
-    return r = r->next;
-  }
-  return r;
-}
-
-row_t *prev_row(row_t *r) {
-  if (r->prev) {
-    return r = r->prev;
-  }
-  return r;
-}
-
-/*
- * Handle vertical scrolling
- * It's technically O(1) since g_screen->num_windows is a constant ;)
- */
-static void adjust_windows(void) {
-  // scroll down
-  if (g_state->cy >= g_screen->top_window + g_screen->num_windows) {
-    row_t *r = g_state->current;
-    g_screen->top_window ++;
-
-    for (size_t i = 0; i < g_screen->num_windows; i ++) {
-      window_t *w = g_screen->windows[g_screen->num_windows - i - 1];
-      w->r = r;
-      r->win = w;
-      r = r->prev;
-    }
-
-    g_state->r_cy --;
-
-    // render from bottom to top
-    render_all(prev_row);
-  }
-
-  // scroll up
-  if (g_state->cy < g_screen->top_window) {
-    row_t *r = g_state->current;
-    g_screen->top_window --;
-
-    for (size_t i = 0; i < g_screen->num_windows; i ++) {
-      window_t *w = g_screen->windows[i];
-      w->r = r;
-      r->win = w;
-      r = r->next;
-    }
-
-    g_state->r_cy ++;
-
-    // render from top to bottom
-    render_all(next_row);
-  }
-}
-
-void up_row(void) {
-  if (g_state->current->prev) {
-    g_state->current = g_state->current->prev;
-    g_state->r_cy --;
-    g_state->cy --;
-
-    adjust_windows();
-    adjust_x_cursor();
-  }
-}
-
-void down_row(void) {
-  if (g_state->current->next) {
-    g_state->current = g_state->current->next;
-    g_state->r_cy ++;
-    g_state->cy ++;
-
-    adjust_windows();
-    adjust_x_cursor();
-  }
-}
-
-void left_column(row_t *r) {
-  if (r->current->prev && r->current->prev->c != '\0') {
-    r->current = r->current->prev;
-    g_state->cx --;
-  }
-}
-
-void right_column(row_t *r) {
-  if (r->current && r->current->next) {
-    r->current = r->current->next;
-    g_state->cx ++;
-  }
-}
+*/

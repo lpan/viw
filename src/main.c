@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "editor.h"
-#include "screen.h"
 #include "listeners.h"
-#include "render.h"
+#include "state.h"
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -13,14 +11,20 @@ int main(int argc, char **argv) {
 
   char *filename = argv[1];
 
-  init_screen();
-  init_editor(filename);
+  // elim escape key delay
+  putenv("ESCDELAY=0");
 
-  initial_render();
-  start_listener();
+  // ncurses stuff
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
+  refresh();
 
-  destroy_editor();
-  destroy_screen();
+  state_t *st = init_state(filename);
 
+  start_listener(st);
+
+  endwin();
   return 0;
 }

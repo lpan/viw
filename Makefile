@@ -2,7 +2,7 @@ CC=gcc
 FLAGS=--std=gnu11 -lncurses
 
 run:
-	@$(CC) $(FLAGS) src/*.c -o viw
+	@$(MAKE) build
 	@./viw test.txt
 	@rm viw
 
@@ -17,7 +17,8 @@ mem:
 	valgrind --leak-check=yes ./viw test.txt
 	@rm viw
 
-test:
-	@$(CC) $(FLAGS) src/state.c src/editor.c tests/state-test.c -o test
-	valgrind --leak-check=yes ./test
-	@rm test
+test-buffer:
+	@$(MAKE) -C tests buffer
+
+test-state:
+	@$(MAKE) -C tests state

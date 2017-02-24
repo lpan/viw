@@ -1,224 +1,120 @@
 #include <ncurses.h>
+#include "buffer.h"
 #include "screen.h"
 #include "render.h"
 #include "state.h"
 #include "ex.h"
 #include "listeners.h"
 
-// we want to preserve cursor position when exit from ex mode
-static void enter_ex(void) {
-  clear_row(g_state->status);
-  g_state->t_cx = g_state->cx;
-  g_state->t_cy = g_state->r_cy;
-  g_state->cx = 0;
-  g_state->r_cy = g_screen->num_windows;
-}
+void start_listener(state_t *st) {
+  while (true) {
+    update_cursor_position(st);
+    render_update(st);
 
-static void exit_ex(void) {
-  g_state->cx = g_state->t_cx;
-  g_state->r_cy = g_state->t_cy;
-  g_state->t_cx = 0;
-  g_state->t_cy = 0;
-}
-
-// enter insert mode with "i"
-static void i_insert(void) {
-  row_t *cur_row = g_state->current;
-  cur_row->current = cur_row->current->prev;
-}
-
-static void ui_insert(void) {
-  row_t *cur_row = g_state->current;
-  g_state->cx = 0;
-  cur_row->current = cur_row->head->next;
-}
-
-static void a_insert(void) {
-  g_state->cx ++;
-}
-
-static void ua_insert(void) {
-  row_t *cur_row = g_state->current;
-  g_state->cx = cur_row->line_size;
-  cur_row->current = cur_row->last;
-}
-
-static void o_insert(void) {
-  append_row(NULL);
-
-  g_state->cx = 0;
-  g_state->cy ++;
-  g_state->r_cy ++;
-
-  row_t *r = g_state->current;
-
-  for (size_t i = g_state->r_cy; r && i < g_screen->num_windows; i ++) {
-    window_t *w = g_screen->windows[i];
-    w->r = r;
-    r->win = w;
-    r = r->next;
-  }
-
-  render_some(next_row, g_screen->num_windows - g_state->r_cy);
-}
-
-static void uo_insert(void) {
-  prepend_row(NULL);
-
-  g_state->cx = 0;
-
-  row_t *r = g_state->current;
-
-  for (size_t i = g_state->r_cy; r && i < g_screen->num_windows; i ++) {
-    window_t *w = g_screen->windows[i];
-    w->r = r;
-    r->win = w;
-    r = r->next;
-  }
-
-  render_some(next_row, g_screen->num_windows - g_state->r_cy);
-}
-
-// enter insert mode with "a"
-static void enter_insert(void (*f) (void)) {
-  row_t *cur_row = g_state->current;
-
-  // handle an empty row
-  if (cur_row->current->c != '\0') {
-    f();
-  }
-}
-
-static void exit_insert(void) {
-  g_state->cx --;
-
-  // current node cant be the null char under 'normal' mode
-  row_t *cur_row = g_state->current;
-  if (cur_row->current->c == '\0') {
-    g_state->cx ++;
-    if (cur_row->current->next) {
-      cur_row->current = cur_row->current->next;
+    switch (st->mode) {
+      case NORMAL:
+        start_normal_listener(st);
+        break;
+      case INSERT_FRONT:
+        start_insert_listener(st, prepend_char);
+        break;
+      case INSERT_BACK:
+        start_insert_listener(st, append_char);
+        break;
+      case EX:
+        start_ex_listener(st);
+        break;
+      case VISUAL:
+        break;
     }
   }
 }
 
-void start_listener(void) {
-  if (g_state->mode == NORMAL) {
-    start_normal_listener();
-  } else if (g_state->mode == EX) {
-    start_ex_listener();
-  } else if (g_state->mode == INSERT) {
-    start_insert_listener();
-  }
-}
-
-void start_normal_listener(void) {
+void start_normal_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     // navigations
     case 'j':
-      down_row();
+      move_cursor(st, DOWN);
       break;
     case 'k':
-      up_row();
+      move_cursor(st, UP);
       break;
     case 'h':
-      left_column(g_state->current);
+      move_cursor(st, LEFT);
       break;
     case 'l':
-      right_column(g_state->current);
+      move_cursor(st, RIGHT);
       break;
     case 'x':
-      delete_char(g_state->current);
-      render_window(NULL, g_state->current);
+      delete_char(st->buf);
       break;
-    case ':':
-      g_state->mode = EX;
-      enter_ex();
-      add_char(g_state->status, ':');
-      render_window(g_screen->status_window, g_state->status);
+    case '$':
+      to_right(st->buf);
       break;
-    case 'i':
-      g_state->mode = INSERT;
-      enter_insert(i_insert);
+    case '0':
+      to_left(st->buf);
       break;
     case 'I':
-      g_state->mode = INSERT;
-      enter_insert(ui_insert);
-      break;
-    case 'a':
-      g_state->mode = INSERT;
-      enter_insert(a_insert);
+      to_left(st->buf);
+    case 'i':
+      if (st->buf->current->line_size == 0) {
+        st->mode = INSERT_BACK;
+      } else {
+        st->mode = INSERT_FRONT;
+      }
       break;
     case 'A':
-      g_state->mode = INSERT;
-      enter_insert(ua_insert);
+      to_right(st->buf);
+    case 'a':
+      st->mode = INSERT_BACK;
       break;
-    case 'o':
-      g_state->mode = INSERT;
-      enter_insert(o_insert);
-      break;
-    case 'O':
-      g_state->mode = INSERT;
-      enter_insert(uo_insert);
+    case ':':
+      st->mode = EX;
+      clear_row(st->buf->status_row);
+      add_char(st->buf->status_row, ':');
       break;
     default:
       break;
   }
-
-  rerender();
-  start_listener();
 }
 
-void start_ex_listener(void) {
+void start_ex_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case '\n':
-      ex_match_action(g_state->status);
-      g_state->mode = NORMAL;
-      exit_ex();
+      ex_match_action(st);
+      st->mode = NORMAL;
       break;
     case KEY_BACKSPACE:
-      delete_char(g_state->status);
       break;
     default:
-      add_char(g_state->status, (char) ch);
+      add_char(st->buf->status_row, (char) ch);
       break;
   }
 
   // exit EX mode when status bar is empty
-  if (g_state->status->line_size == 0) {
-    g_state->mode = NORMAL;
-    exit_ex();
+  if (st->buf->status_row->line_size == 0) {
+    st->mode = NORMAL;
   }
-
-  render_window(g_screen->status_window, g_state->status);
-  rerender();
-  start_listener();
 }
 
-void start_insert_listener(void) {
+void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
   int ch = getch();
   switch (ch) {
     case '\n':
       break;
     case KEY_BACKSPACE:
-      backspace_char(g_state->current);
-      render_window(NULL, g_state->current);
       break;
     case KEY_ESC:
-      g_state->mode = NORMAL;
-      exit_insert();
+      if (st->mode == INSERT_FRONT) {
+        move_current(st->buf, LEFT);
+      }
+
+      st->mode = NORMAL;
       break;
     default:
-      add_char(g_state->current, (char) ch);
-      render_window(NULL, g_state->current);
+      insert(st->buf, (char) ch);
       break;
   }
-
-  rerender();
-  start_listener();
-}
-
-void start_visual_listener(void) {
 }

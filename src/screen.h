@@ -2,7 +2,8 @@
 #define SCREEN_H
 
 #include <ncurses.h>
-#include "state.h"
+
+typedef struct row row_t;
 
 typedef struct window {
   WINDOW *w;
@@ -12,8 +13,6 @@ typedef struct window {
 typedef struct screen {
   // total number of non status windows displayed
   size_t num_windows;
-  // index of the first window displayed
-  size_t top_window;
 
   // each ncurses window represents a line
   window_t **windows;
@@ -21,12 +20,8 @@ typedef struct screen {
   window_t *status_window;
 } screen_t;
 
-extern screen_t *g_screen;
+screen_t *init_screen(size_t term_height);
 
-void init_screen(void);
-
-void destroy_screen(void);
-
-void refresh_window(void);
+void destroy_screen(screen_t *scr);
 
 #endif

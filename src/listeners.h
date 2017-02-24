@@ -3,17 +3,18 @@
 
 #define KEY_ESC 27
 
+#include "state.h"
+#include "buffer.h"
+
 // keypress listeners
 // There has to be exactly one listener running
 
-void start_listener(void);
+void start_listener(state_t *st);
 
-void start_normal_listener(void);
+void start_normal_listener(state_t *st);
 
-void start_ex_listener(void);
+void start_ex_listener(state_t *st);
 
-void start_insert_listener(void);
-
-void start_visual_listener(void);
+void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char));
 
 #endif

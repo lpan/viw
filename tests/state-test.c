@@ -1,76 +1,56 @@
+/*
+ * Integration test for state, buffer and screen
+ */
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
 #include "../src/state.h"
-#include "../src/editor.h"
 
-static void printBuffer(void) {
-  row_t *r = g_state->head;
-  while (r) {
-    echar_t *c = r->head;
-    while (c) {
-      printf("%c", c->c);
-      c = c->next;
-    }
-    printf("\n");
-    r = r->next;
-  }
+int test_update_cursor(const char *filename) {
+  // cursor moved to an empty line
+  state_t *st = init_state(filename);
+  assert(st->cx == 0 && st->cy == 0);
+
+  update_cursor_position(st);
+  assert(st->cx == 0 && st->cy == 0);
+
+  destroy_state(st);
+  return 0;
 }
 
-static int mycmp(row_t *r, char *str) {
-  const size_t s = 100;
-  char buffer[s];
-  echar_t *c = r->head;
+int test_update_display(const char *filename) {
+  state_t *st = init_state(filename);
+  window_t **windows = st->scr->windows;
+  row_t *head = st->buf->head;
 
-  for (size_t i = 0; c; i++) {
-    snprintf(buffer + i, s - i, "%c", c->c);
-    c = c->next;
+  assert(st->scr->num_windows == (size_t) LINES - 1);
+
+  update_display(st);
+  for (size_t i = 0; i < st->scr->num_windows; i ++) {
+    if (head) {
+      assert(windows[i]->r == head);
+    } else {
+      assert(windows[i]->r == NULL);
+    }
   }
 
-  return strcmp(buffer, str);
+  destroy_state(st);
+  return 0;
 }
 
 int main(void) {
-  const char *filename = "./tests/file.txt";
+  const char *filename = "./file.txt";
 
-  init_editor(filename);
-  assert(mycmp(g_state->current, "five") == 0);
+  // ncurses stuff
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
 
-  // move cursor up
-  up_row();
-  up_row();
-  assert(mycmp(g_state->current, "three") == 0);
+  test_update_cursor(filename);
+  test_update_display(filename);
 
-  // delete current row, cursor should be moved to next
-  delete_row();
-  assert(mycmp(g_state->current, "four") == 0);
-
-  delete_row();
-  assert(mycmp(g_state->current, "five") == 0);
-
-  delete_row();
-  assert(mycmp(g_state->current, "two") == 0);
-
-  up_row();
-  up_row();
-  assert(mycmp(g_state->current, "zero") == 0);
-
-  // test prepend at start
-  prepend_row("goose");
-  assert(mycmp(g_state->current, "goose") == 0);
-  assert(mycmp(g_state->head, "goose") == 0);
-
-  down_row();
-  down_row();
-  down_row();
-
-  // test append at last
-  append_row("paninos");
-  assert(mycmp(g_state->current, "paninos") == 0);
-  assert(mycmp(g_state->last, "paninos") == 0);
-
-  destroy_editor();
-
+  endwin();
   return 0;
 }
