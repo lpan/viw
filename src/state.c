@@ -128,6 +128,11 @@ void backspace_char(state_t *st) {
   buffer_t *buf = st->buf;
   row_t *r = buf->current;
 
+  if (st->mode == EX) {
+    move_current(st->buf, LEFT);
+    drop_char(buf->status_row);
+  }
+
   if (st->mode == INSERT_FRONT) {
     if (!r->current->prev) {
       // delete line

@@ -159,9 +159,7 @@ void prepend_char(buffer_t *buf, char c) {
   r->current = r->current->next;
 }
 
-void delete_char(buffer_t *buf) {
-  row_t *r = buf->current;
-
+void drop_char(row_t *r) {
   if (r->line_size == 0) {
     return;
   }
@@ -189,7 +187,6 @@ void delete_char(buffer_t *buf) {
     r->current = to_delete->prev;
     r->last = r->current;
     r->last->next = NULL;
-    buf->current_char --;
   } else {
     r->current = to_delete->next;
     r->current->prev = to_delete->prev;
@@ -200,6 +197,16 @@ void delete_char(buffer_t *buf) {
   r->is_dirty = true;
 
   free(to_delete);
+}
+
+void delete_char(buffer_t *buf) {
+  row_t *r = buf->current;
+
+  if (r->current && r->current == r->last) {
+    buf->current_char --;
+  }
+
+  drop_char(buf->current);
 }
 
 void append_row(buffer_t *buf, const char *line) {

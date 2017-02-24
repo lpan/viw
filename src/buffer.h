@@ -55,6 +55,11 @@ buffer_t *init_buffer(const char *filename);
 void add_char(row_t *r, char c);
 
 /*
+ * Primitive drop char
+ */
+void drop_char(row_t *r);
+
+/*
  * Append char to line then set the current char to new char
  */
 void append_char(buffer_t *buf, char c);
