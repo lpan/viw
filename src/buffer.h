@@ -92,9 +92,10 @@ void prepend_row(buffer_t *buf, const char *line);
 void join_row(buffer_t *buf);
 
 /*
- * When user press enter in insert mode, we seperate the line into two
+ * When user press enter in insert mode, we split the line into two
+ * Current char becomes the head of the new line
  */
-void seperate_row(buffer_t *buf);
+void split_row(buffer_t *buf);
 
 /*
  * Move the cursor up/down/left/right

@@ -48,9 +48,10 @@ void update_scr_windows(state_t *st);
 void handle_enter(state_t *st);
 
 /*
- * delete_char() insert/ex mode version
+ * Joine two lines when backspace at the beginning of the line
+ * Otherwise delete char in front of the cursor
  */
-void backspace_char(state_t *st);
+void handle_backspace(state_t *st);
 
 void destroy_state(state_t *st);
 

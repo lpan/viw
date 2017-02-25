@@ -87,7 +87,7 @@ void start_ex_listener(state_t *st) {
       st->mode = NORMAL;
       break;
     case KEY_BACKSPACE:
-      backspace_char(st);
+      handle_backspace(st);
       break;
     default:
       add_char(st->buf->status_row, (char) ch);
@@ -107,7 +107,7 @@ void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
       handle_enter(st);
       break;
     case KEY_BACKSPACE:
-      backspace_char(st);
+      handle_backspace(st);
       break;
     case KEY_ESC:
       if (st->mode == INSERT_FRONT) {

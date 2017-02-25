@@ -389,7 +389,7 @@ void join_row(buffer_t *buf) {
   move_current(buf, UP);
 }
 
-void seperate_row(buffer_t *buf) {
+void split_row(buffer_t *buf) {
   row_t *src = buf->current;
   append_row(buf, NULL);
   row_t *dest = buf->current;
