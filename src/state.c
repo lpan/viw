@@ -25,6 +25,29 @@ static void update_top_row(state_t *st) {
 }
 
 /*
+ * Display current mode on status row
+ */
+static void update_mode_status(state_t *st) {
+  const char *insert_mode = "-- INSERT --";
+  const char *normal_mode = "-- NORMAL --";
+
+  const char *text;
+
+  if (st->mode == INSERT_BACK || st->mode == INSERT_FRONT) {
+    text = insert_mode;
+  } else if (st->mode == NORMAL) {
+    text = normal_mode;
+  } else {
+    return;
+  }
+
+  clear_row(st->buf->status_row);
+  for (size_t i = 0; i < strlen(text); i ++) {
+    add_char(st->buf->status_row, text[i]);
+  }
+}
+
+/*
  * Cursor position can be computed from:
  * buf->current_row, buf->current_char, scr->top_row
  */
@@ -124,6 +147,7 @@ void destroy_state(state_t *st) {
 }
 
 void update_state(state_t *st) {
+  update_mode_status(st);
   update_top_row(st);
 
   if (st->to_refresh) {
