@@ -409,6 +409,8 @@ void join_row(buffer_t *buf) {
 
 void split_row(buffer_t *buf) {
   row_t *src = buf->current;
+  size_t current_char = buf->current_char;
+
   append_row(buf, NULL);
   row_t *dest = buf->current;
 
@@ -416,8 +418,8 @@ void split_row(buffer_t *buf) {
     return;
   }
 
-  dest->line_size = src->line_size - buf->current_char;
-  src->line_size = buf->current_char;
+  dest->line_size = src->line_size - current_char;
+  src->line_size = current_char;
 
   dest->head = src->current;
   dest->last = src->last;
