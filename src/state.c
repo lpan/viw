@@ -130,6 +130,7 @@ void handle_enter(state_t *st) {
     append_char(st->buf, '0');
     split_row(st->buf);
     delete_char(st->buf);
+    update_top_row(st);
     update_scr_windows(st);
     update_cursor_position(st);
     return;
@@ -143,6 +144,7 @@ void handle_enter(state_t *st) {
   }
 
   split_row(st->buf);
+  update_top_row(st);
   update_scr_windows(st);
   update_cursor_position(st);
 }
@@ -159,6 +161,7 @@ void handle_backspace(state_t *st) {
   if (st->mode == INSERT_FRONT) {
     if (!r->current->prev) {
       join_row(st->buf);
+      update_top_row(st);
       update_scr_windows(st);
       return;
     }
@@ -170,6 +173,7 @@ void handle_backspace(state_t *st) {
   if (st->mode == INSERT_BACK) {
     if (!r->current) {
       join_row(st->buf);
+      update_top_row(st);
       update_scr_windows(st);
       return;
     }
