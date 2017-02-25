@@ -406,8 +406,18 @@ void seperate_row(buffer_t *buf) {
 
   src->last = src->current->prev;
 
-  dest->head->prev = NULL;
-  src->last->next = NULL;
+  // enter at the very end of the line
+  if (dest->head) {
+    dest->head->prev = NULL;
+  }
+
+  // enter at the beginning of the line
+  if (src->last) {
+    src->last->next = NULL;
+  } else {
+    // src->last is NULL implies line is empty
+    src->head = NULL;
+  }
 
   dest->current = dest->head;
   buf->current_char = 0;
