@@ -7,30 +7,7 @@
 #include "buffer.h"
 #include "state.h"
 
-state_t *init_state(const char *filename) {
-  state_t *st = malloc(sizeof(state_t));
-
-  st->mode = NORMAL;
-  st->cx = 0;
-  st->cy = 0;
-  st->top_row = 0;
-
-  st->buf = init_buffer(filename);
-  st->scr = init_screen(LINES);
-
-  update_cursor_position(st);
-  update_scr_windows(st);
-
-  return st;
-}
-
-void destroy_state(state_t *st) {
-  destroy_buffer(st->buf);
-  destroy_screen(st->scr);
-  free(st);
-}
-
-int update_top_row(state_t *st) {
+static int update_top_row(state_t *st) {
   size_t current_row = st->buf->current_row;
   size_t num_windows = st->scr->num_windows;
 
@@ -49,7 +26,11 @@ int update_top_row(state_t *st) {
   return 0;
 }
 
-void update_cursor_position(state_t *st) {
+/*
+ * Cursor position can be computed from:
+ * buf->current_row, buf->current_char, scr->top_row
+ */
+static void update_cursor_position(state_t *st) {
   size_t line_size = st->buf->current->line_size;
   size_t current_row = st->buf->current_row;
   size_t current_char = st->buf->current_char;
@@ -76,12 +57,16 @@ void update_cursor_position(state_t *st) {
 }
 
 /*
+ * Determine current rows to be displayed and update windows <-> rows links
+ * Can be computed from:
+ * st->cy, buf->current_row, scr->top_window, scr->num_windows
+ *
  * We want to update the display when:
  * - scroll up/down (update_top_row() -> true)
  * - insert/delete row(s)
  * - insert at the bottom which triggers a "scroll"
  */
-void update_scr_windows(state_t *st) {
+static void update_scr_windows(state_t *st) {
   // link status window and its buffer
   if (!st->scr->status_window->r) {
     st->scr->status_window->r = st->buf->status_row;
@@ -114,14 +99,41 @@ void update_scr_windows(state_t *st) {
   }
 }
 
-void move_cursor(state_t *st, DIRECTION d) {
-  move_current(st->buf, d);
+state_t *init_state(const char *filename) {
+  state_t *st = malloc(sizeof(state_t));
 
+  st->mode = NORMAL;
+  st->cx = 0;
+  st->cy = 0;
+  st->top_row = 0;
+
+  st->buf = init_buffer(filename);
+  st->scr = init_screen(LINES);
+
+  update_cursor_position(st);
+  update_scr_windows(st);
+
+  return st;
+}
+
+void destroy_state(state_t *st) {
+  destroy_buffer(st->buf);
+  destroy_screen(st->scr);
+  free(st);
+}
+
+void update_state(state_t *st) {
   bool scrolled = update_top_row(st);
 
   if (scrolled) {
     update_scr_windows(st);
   }
+
+  update_cursor_position(st);
+}
+
+void move_cursor(state_t *st, DIRECTION d) {
+  move_current(st->buf, d);
 }
 
 void handle_enter(state_t *st) {

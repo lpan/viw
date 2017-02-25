@@ -30,20 +30,9 @@ typedef struct state {
 
 state_t *init_state(const char *filename);
 
+void update_state(state_t *st);
+
 void move_cursor(state_t *st, DIRECTION d);
-
-/*
- * Cursor position can be computed from:
- * buf->current_row, buf->current_char, scr->top_row
- */
-void update_cursor_position(state_t *st);
-
-/*
- * Determine current rows to be displayed and update windows <-> rows links
- * Can be computed from:
- * st->cy, buf->current_row, scr->top_window, scr->num_windows
- */
-void update_scr_windows(state_t *st);
 
 void handle_enter(state_t *st);
 

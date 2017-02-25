@@ -8,7 +8,7 @@
 
 void start_listener(state_t *st) {
   while (true) {
-    update_cursor_position(st);
+    update_state(st);
     render_update(st);
 
     switch (st->mode) {
