@@ -63,11 +63,11 @@ Feel free to contribute! :)
     the result from `update_state()`.
 4. Goto step 2
 
-### Hierarchy of states
+### Hierarchy of the states
 
 Our main `state` object has two children states, namely `buffer` and `screen`. This seperation
-makes it easier to perform unit tests against the `buffer`. It reduces the amount of efforts
-when migrating to a different rendering library.
+makes it easier to perform unit tests against the `buffer`. It also facilitates the migration
+to a different rendering library.
 
 #### The State
 
