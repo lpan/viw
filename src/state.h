@@ -50,4 +50,8 @@ void handle_backspace(state_t *st);
 
 void destroy_state(state_t *st);
 
+void set_prev_key(state_t *st, char c);
+
+void reset_prev_key(state_t *st);
+
 #endif

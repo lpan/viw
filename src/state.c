@@ -206,3 +206,11 @@ void handle_backspace(state_t *st) {
     }
   }
 }
+
+void set_prev_key(state_t *st, char c) {
+  st->prev_key = c;
+}
+
+void reset_prev_key(state_t *st) {
+  st->prev_key = '\0';
+}

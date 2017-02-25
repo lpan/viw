@@ -53,15 +53,28 @@ void start_normal_listener(state_t *st) {
       break;
     case 'G':
       to_bottom(st->buf);
+      st->to_refresh = true;
       break;
     case 'g':
       if (st->prev_key == 'g') {
         to_top(st->buf);
+        st->to_refresh = true;
+        reset_prev_key(st);
+      } else {
+        set_prev_key(st, (char) ch);
       }
-
       break;
     case 'x':
       delete_char(st->buf);
+      break;
+    case 'd':
+      if (st->prev_key == 'd') {
+        delete_row(st->buf);
+        st->to_refresh = true;
+        reset_prev_key(st);
+      } else {
+        set_prev_key(st, (char) ch);
+      }
       break;
     case 'I':
       to_left(st->buf);
@@ -95,8 +108,6 @@ void start_normal_listener(state_t *st) {
     default:
       break;
   }
-
-  st->prev_key = (char) ch;
 }
 
 void start_ex_listener(state_t *st) {
