@@ -353,6 +353,19 @@ void to_left(buffer_t *buf) {
   }
 }
 
+void to_top(buffer_t *buf) {
+  size_t cur = buf->current_row;
+  for (size_t i = 0; i < cur; i ++) {
+    move_current(buf, UP);
+  }
+}
+
+void to_bottom(buffer_t *buf) {
+  for (size_t i = buf->current_row; i < buf->num_rows; i ++) {
+    move_current(buf, DOWN);
+  }
+}
+
 void join_row(buffer_t *buf) {
   // do nothing on top line
   if (!buf->current->prev) {

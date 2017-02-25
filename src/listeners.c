@@ -33,7 +33,6 @@ void start_listener(state_t *st) {
 void start_normal_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
-    // navigations
     case 'j':
       move_cursor(st, DOWN);
       break;
@@ -46,14 +45,23 @@ void start_normal_listener(state_t *st) {
     case 'l':
       move_cursor(st, RIGHT);
       break;
-    case 'x':
-      delete_char(st->buf);
-      break;
     case '$':
       to_right(st->buf);
       break;
     case '0':
       to_left(st->buf);
+      break;
+    case 'G':
+      to_bottom(st->buf);
+      break;
+    case 'g':
+      if (st->prev_key == 'g') {
+        to_top(st->buf);
+      }
+
+      break;
+    case 'x':
+      delete_char(st->buf);
       break;
     case 'I':
       to_left(st->buf);
@@ -87,6 +95,8 @@ void start_normal_listener(state_t *st) {
     default:
       break;
   }
+
+  st->prev_key = (char) ch;
 }
 
 void start_ex_listener(state_t *st) {

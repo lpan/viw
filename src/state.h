@@ -27,6 +27,9 @@ typedef struct state {
   // rerender all windows if it is true
   bool to_refresh;
 
+  // support two char commands such as 'gg', 'dd'
+  char prev_key;
+
   // insert/normal/visual/ex
   MODE mode;
 } state_t;

@@ -110,6 +110,8 @@ state_t *init_state(const char *filename) {
   st->buf = init_buffer(filename);
   st->scr = init_screen(LINES);
 
+  st->prev_key = '\0';
+
   update_state(st);
 
   return st;

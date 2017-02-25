@@ -108,11 +108,11 @@ void move_current(buffer_t *buf, DIRECTION d);
  */
 void to_right(buffer_t *buf);
 
-/*
- * Move cursor all the way to the left
- */
 void to_left(buffer_t *buf);
 
+void to_top(buffer_t *buf);
+
+void to_bottom(buffer_t *buf);
 /*
  * Make the row empty
  */
