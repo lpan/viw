@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
 
   start_listener(st);
 
+  destroy_state(st);
   endwin();
   return 0;
 }

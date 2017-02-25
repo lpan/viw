@@ -125,6 +125,23 @@ void move_cursor(state_t *st, DIRECTION d) {
 }
 
 void handle_enter(state_t *st) {
+  // Edge case: enter at the end of the line in insert_back mode
+  if (st->mode == INSERT_BACK && st->buf->current_char == st->buf->current->line_size - 1) {
+    append_char(st->buf, '0');
+    split_row(st->buf);
+    delete_char(st->buf);
+    update_scr_windows(st);
+    update_cursor_position(st);
+    return;
+  }
+
+  // in insert_back, cursor one char to the right of "current"
+  // we always want to in insert_back mode when line is empty
+  if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
+    move_current(st->buf, RIGHT);
+    st->mode = INSERT_FRONT;
+  }
+
   split_row(st->buf);
   update_scr_windows(st);
   update_cursor_position(st);

@@ -212,7 +212,7 @@ void drop_char(row_t *r) {
 void delete_char(buffer_t *buf) {
   row_t *r = buf->current;
 
-  if (r->current && r->current == r->last) {
+  if (r->line_size > 1 && r->current && r->current == r->last) {
     buf->current_char --;
   }
 
