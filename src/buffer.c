@@ -155,8 +155,7 @@ void prepend_char(buffer_t *buf, char c) {
 
     r->head->prev = ec;
     r->head = ec;
-    r->current = ec;
-    r->current = r->current->next;
+    r->current = ec->next;
 
     buf->current_char ++;
     r->is_dirty = true;

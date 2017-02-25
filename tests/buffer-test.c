@@ -53,34 +53,31 @@ static int test_chars(const char *filename) {
   assert(mycmp(buf->current, "zero") == 0);
   assert(buf->current->current->c == 'z');
 
-  prepend_char(buf->current, 'm');
+  prepend_char(buf, 'm');
   assert(mycmp(buf->current, "mzero") == 0);
-  assert(buf->current->current->c == 'm');
-
-  delete_char(buf->current);
-  assert(mycmp(buf->current, "zero") == 0);
   assert(buf->current->current->c == 'z');
 
-  append_char(buf->current, 'm');
-  assert(mycmp(buf->current, "zmero") == 0);
-  assert(buf->current->current->c == 'm');
-
-  delete_char(buf->current);
-  assert(mycmp(buf->current, "zero") == 0);
+  delete_char(buf);
+  assert(mycmp(buf->current, "mero") == 0);
   assert(buf->current->current->c == 'e');
 
-  // delete e
-  delete_char(buf->current);
+  append_char(buf, 'x');
+  assert(mycmp(buf->current, "mexro") == 0);
+  assert(buf->current->current->c == 'x');
+
+  // delete x
+  delete_char(buf);
   assert(buf->current->current->c == 'r');
   // delete r
-  delete_char(buf->current);
+  delete_char(buf);
   assert(buf->current->current->c == 'o');
   // delete o
-  delete_char(buf->current);
-  assert(buf->current->current->c == 'z');
+  delete_char(buf);
+  assert(buf->current->current->c == 'e');
 
-  delete_char(buf->current);
-  append_char(buf->current, 'x');
+  delete_char(buf);
+  delete_char(buf);
+  append_char(buf, 'x');
   assert(mycmp(buf->current, "x") == 0);
   assert(buf->current->current->c == 'x');
 
