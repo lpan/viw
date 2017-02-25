@@ -11,6 +11,7 @@
 // linked list to array of chars
 static char *to_string(echar_t *head, size_t length) {
   char *result = malloc((length + 1) * sizeof(char));
+  result[0] = '\0';
 
   echar_t *ec = head;
   for (size_t i = 0; ec && i < length; i++) {
@@ -21,7 +22,7 @@ static char *to_string(echar_t *head, size_t length) {
   return result;
 }
 
-static char *row_to_string(buffer_t *buf) {
+static char *rows_to_string(buffer_t *buf) {
   size_t buffer_size = buf->num_rows;
   row_t *r = buf->head;
 
@@ -56,7 +57,7 @@ static void quit(state_t *st) {
 }
 
 static void save(state_t *st) {
-  char *buf = row_to_string(st->buf);
+  char *buf = rows_to_string(st->buf);
 
   FILE *fp = fopen(st->buf->filename, "w");
   fputs(buf, fp);
