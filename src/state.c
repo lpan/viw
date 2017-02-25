@@ -7,23 +7,21 @@
 #include "buffer.h"
 #include "state.h"
 
-static int update_top_row(state_t *st) {
+static void update_top_row(state_t *st) {
   size_t current_row = st->buf->current_row;
   size_t num_windows = st->scr->num_windows;
 
   // scroll down
   if (current_row >= st->top_row + num_windows) {
     st->top_row = current_row - num_windows + 1;
-    return 1;
+    st->to_refresh = true;
   }
 
   // scroll up
   if (current_row < st->top_row) {
     st->top_row = current_row;
-    return 1;
+    st->to_refresh = true;
   }
-
-  return 0;
 }
 
 /*
@@ -107,11 +105,12 @@ state_t *init_state(const char *filename) {
   st->cy = 0;
   st->top_row = 0;
 
+  st->to_refresh = true;
+
   st->buf = init_buffer(filename);
   st->scr = init_screen(LINES);
 
-  update_cursor_position(st);
-  update_scr_windows(st);
+  update_state(st);
 
   return st;
 }
@@ -123,10 +122,11 @@ void destroy_state(state_t *st) {
 }
 
 void update_state(state_t *st) {
-  bool scrolled = update_top_row(st);
+  update_top_row(st);
 
-  if (scrolled) {
+  if (st->to_refresh) {
     update_scr_windows(st);
+    st->to_refresh = false;
   }
 
   update_cursor_position(st);
@@ -142,9 +142,7 @@ void handle_enter(state_t *st) {
     append_char(st->buf, '0');
     split_row(st->buf);
     delete_char(st->buf);
-    update_top_row(st);
-    update_scr_windows(st);
-    update_cursor_position(st);
+    st->to_refresh = true;
     return;
   }
 
@@ -156,9 +154,7 @@ void handle_enter(state_t *st) {
   }
 
   split_row(st->buf);
-  update_top_row(st);
-  update_scr_windows(st);
-  update_cursor_position(st);
+  st->to_refresh = true;
 }
 
 void handle_backspace(state_t *st) {
@@ -173,8 +169,7 @@ void handle_backspace(state_t *st) {
   if (st->mode == INSERT_FRONT) {
     if (!r->current->prev) {
       join_row(st->buf);
-      update_top_row(st);
-      update_scr_windows(st);
+      st->to_refresh = true;
       return;
     }
 
@@ -185,8 +180,7 @@ void handle_backspace(state_t *st) {
   if (st->mode == INSERT_BACK) {
     if (!r->current) {
       join_row(st->buf);
-      update_top_row(st);
-      update_scr_windows(st);
+      st->to_refresh = true;
       return;
     }
 

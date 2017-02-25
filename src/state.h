@@ -24,6 +24,9 @@ typedef struct state {
   size_t cx, cy;
   size_t top_row;
 
+  // rerender all windows if it is true
+  bool to_refresh;
+
   // insert/normal/visual/ex
   MODE mode;
 } state_t;

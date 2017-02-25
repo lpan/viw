@@ -241,6 +241,7 @@ void append_row(buffer_t *buf, const char *line) {
   r->next = next;
   r->prev = prev;
 
+  buf->current_char = 0;
   buf->current_row ++;
   buf->num_rows ++;
   buf->current = r;
@@ -257,11 +258,13 @@ void prepend_row(buffer_t *buf, const char *line) {
     buf->head = r;
     buf->current = r;
 
+    buf->current_char = 0;
+    buf->current_row = 0;
     buf->num_rows ++;
     return;
   }
 
-  buf->current = buf->current->prev;
+  move_current(buf, UP);
   append_row(buf, line);
 }
 

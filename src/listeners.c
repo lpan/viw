@@ -69,6 +69,16 @@ void start_normal_listener(state_t *st) {
     case 'a':
       st->mode = INSERT_BACK;
       break;
+    case 'o':
+      append_row(st->buf, NULL);
+      st->to_refresh = true;
+      st->mode = INSERT_BACK;
+      break;
+    case 'O':
+      prepend_row(st->buf, NULL);
+      st->to_refresh = true;
+      st->mode = INSERT_BACK;
+      break;
     case ':':
       st->mode = EX;
       clear_row(st->buf->status_row);
