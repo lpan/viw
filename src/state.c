@@ -91,7 +91,7 @@ static void update_cursor_position(state_t *st) {
     st->cy = st->scr->num_windows;
     st->cx = st->buf->status_row->line_size;
   } else {
-    st->cx = st->cx + st->padding_front + 2;
+    st->cx = st->cx + st->padding_front + 1;
   }
 }
 

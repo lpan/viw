@@ -11,6 +11,7 @@ void render_window(window_t *w, size_t padding_front) {
 
   werase(w->w);
 
+  // render line number
   if (w->line_number > 0) {
     size_t num_digits = 0;
     size_t line_number = w->line_number;
@@ -20,10 +21,13 @@ void render_window(window_t *w, size_t padding_front) {
       num_digits ++;
     }
 
+    wattron(w->w, A_BOLD);
     for (size_t i = 0; i < padding_front - num_digits; i ++) {
       wprintw(w->w, "%c", ' ');
     }
-    wprintw(w->w, "%zu  ", w->line_number);
+    wprintw(w->w, "%zu ", w->line_number);
+
+    wattroff(w->w, A_BOLD);
   }
 
   echar_t *ch = w->r->head;
