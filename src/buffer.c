@@ -351,7 +351,10 @@ void to_left(buffer_t *buf) {
 }
 
 void join_row(buffer_t *buf) {
-  assert(buf->current->prev);
+  // do nothing on top line
+  if (!buf->current->prev) {
+    return;
+  }
 
   row_t *src = buf->current;
   row_t *dest = src->prev;
