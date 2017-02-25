@@ -12,6 +12,7 @@ static window_t **init_windows(size_t term_height) {
     windows[i] = malloc(sizeof(window_t));
     windows[i]->w = newwin(height, width, i, 0);
     windows[i]->r = NULL;
+    windows[i]->line_number = 0;
   }
 
   return windows;
@@ -23,6 +24,7 @@ static window_t *init_status_window(size_t term_height) {
   window_t *status_window = malloc(sizeof(window_t));
   status_window->w = newwin(height, width, term_height - 1, 0);
   status_window->r = NULL;
+  status_window->line_number = 0;
 
   return status_window;
 }

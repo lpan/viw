@@ -8,6 +8,7 @@ typedef struct row row_t;
 typedef struct window {
   WINDOW *w;
   row_t *r;
+  size_t line_number;
 } window_t;
 
 typedef struct screen {

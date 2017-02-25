@@ -24,6 +24,18 @@ static void update_top_row(state_t *st) {
   }
 }
 
+static void update_padding_front(state_t *st) {
+  size_t max_row = st->buf->num_rows;
+  size_t num_digits = 0;
+
+  while (max_row > 0) {
+    max_row /= 10;
+    num_digits ++;
+  }
+
+  st->padding_front = num_digits + 1;
+}
+
 /*
  * Display current mode on status row
  */
@@ -57,6 +69,10 @@ static void update_cursor_position(state_t *st) {
   size_t current_char = st->buf->current_char;
   size_t top_row = st->top_row;
 
+  // cuz cx and cy are "computed properties" ;)
+  st->cx = 0;
+  st->cy = 0;
+
   st->cy = current_row - top_row;
 
   if (line_size == 0) {
@@ -74,6 +90,8 @@ static void update_cursor_position(state_t *st) {
   if (st->mode == EX) {
     st->cy = st->scr->num_windows;
     st->cx = st->buf->status_row->line_size;
+  } else {
+    st->cx = st->cx + st->padding_front + 2;
   }
 }
 
@@ -103,19 +121,22 @@ static void update_scr_windows(state_t *st) {
 
   for (size_t i = top_row; i <= current_row; i ++) {
     windows[current_row - i]->r = r;
+    windows[current_row - i]->line_number = top_row + current_row - i + 1;
     r->is_dirty = true;
     r = r->prev;
   }
 
-  r = st->buf->current;
+  r = st->buf->current->next;
 
-  for (size_t i = current_row; i < top_row + num_windows; i ++) {
+  for (size_t i = current_row + 1; i < top_row + num_windows; i ++) {
     if (r) {
       windows[i - top_row]->r = r;
+      windows[i - top_row]->line_number = i + 1;
       r->is_dirty = true;
       r = r->next;
     } else {
       windows[i - top_row]->r = NULL;
+      windows[i - top_row]->line_number = 0;
     }
   }
 }
@@ -149,6 +170,7 @@ void destroy_state(state_t *st) {
 void update_state(state_t *st) {
   update_mode_status(st);
   update_top_row(st);
+  update_padding_front(st);
 
   if (st->to_refresh) {
     update_scr_windows(st);

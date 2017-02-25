@@ -24,6 +24,10 @@ typedef struct state {
   size_t cx, cy;
   size_t top_row;
 
+  // reserve some space in front of each line to display line number
+  // This property depends on the # of digits of buf->num_rows
+  size_t padding_front;
+
   // rerender all windows if it is true
   bool to_refresh;
 

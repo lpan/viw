@@ -3,9 +3,9 @@
 
 #include "state.h"
 
-void render_window(window_t *w);
+void render_window(window_t *w, size_t padding_front);
 
-void render_windows(screen_t *scr);
+void render_windows(state_t *st);
 
 void render_update(state_t *st);
 
