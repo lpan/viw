@@ -12,6 +12,9 @@ https://vimeo.com/205701269
 ```bash
 # Fedora
 sudo dnf install ncurses-devel
+
+# Debian/Ubuntu
+sudo apt-get install libncurses5-dev
 ```
 
 ## Installation & usage
