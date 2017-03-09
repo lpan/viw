@@ -7,7 +7,7 @@ run:
 	@rm viw
 
 build:
-	@$(CC) $(FLAGS) src/*.c -o viw
+	@$(CC) src/*.c -o viw $(FLAGS)
 
 clean:
 	rm -f viw *~
