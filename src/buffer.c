@@ -124,11 +124,18 @@ buffer_t *init_buffer(const char *filename) {
   // we want to start at the top when user opens up a new file
   buf->current = buf->head;
   // Set current to the first char of line
-  // TODO set current to the first non space char
   buf->current->current = buf->current->head;
 
-  buf->current_row = 0;
   buf->current_char = 0;
+  buf->current_row = 0;
+
+  // go to the first non-empty character
+  if (buf->current->line_size > 1) {
+    while (buf->current->current->c == ' ' && buf->current->current->next) {
+      buf->current->current = buf->current->current->next;
+      buf->current_char ++;
+    }
+  }
 
   return buf;
 }
