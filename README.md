@@ -1,12 +1,12 @@
 # Viw, the ghetto editor
 
-VI Worsened, a lightweight and fun VI clone.
+VI Worsened, a lightweight and fun VI clone. Inspired by the
+[6-domino-cascade](https://github.com/Day8/re-frame#it-is-a-6-domino-cascade)
+from the React world.
 
 ### DEMO
 https://vimeo.com/205701269
-
-## Dependencies
-* gcc
+## Dependencies * gcc
 * ncurses
 
 ```bash
