@@ -6,7 +6,9 @@ from the React world.
 
 ### DEMO
 https://vimeo.com/205701269
-## Dependencies * gcc
+## Dependencies
+
+* gcc
 * ncurses
 
 ```bash
