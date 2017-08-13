@@ -184,6 +184,16 @@ void move_cursor(state_t *st, DIRECTION d) {
   move_current(st->buf, d);
 }
 
+void handle_insert(state_t *st, char c) {
+  if (st->mode == INSERT_FRONT) {
+    prepend_char(st->buf, c);
+  }
+
+  if (st->mode == INSERT_BACK) {
+    append_char(st->buf, c);
+  }
+}
+
 void handle_enter(state_t *st) {
   // Edge case: enter at the end of the line in insert_back mode
   if (st->mode == INSERT_BACK && st->buf->current_char == st->buf->current->line_size - 1) {

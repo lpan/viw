@@ -44,6 +44,8 @@ void update_state(state_t *st);
 
 void move_cursor(state_t *st, DIRECTION d);
 
+void handle_insert(state_t *st, char c);
+
 void handle_enter(state_t *st);
 
 /*
