@@ -3,7 +3,7 @@
 
 #define KEY_ESC 27
 
-#include "state.h"
+#include "controller.h"
 #include "buffer.h"
 
 // keypress listeners

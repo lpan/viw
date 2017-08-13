@@ -3,6 +3,7 @@
 #include "screen.h"
 #include "render.h"
 #include "state.h"
+#include "controller.h"
 #include "ex.h"
 #include "listeners.h"
 
