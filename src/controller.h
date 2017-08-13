@@ -5,7 +5,9 @@
 #include "state.h"
 #include "buffer.h"
 
-void move_cursor(state_t *st, DIRECTION d);
+void handle_move(state_t *st, DIRECTION d);
+
+void handle_move_to_edge(state_t *st, DIRECTION d);
 
 void handle_insert(state_t *st, char c);
 

@@ -9,10 +9,29 @@
 #include "controller.h"
 
 // -----------
-// Actions
+// Mutations
 // -----------
-void move_cursor(state_t *st, DIRECTION d) {
+void handle_move(state_t *st, DIRECTION d) {
   move_current(st->buf, d);
+}
+
+void handle_move_to_edge(state_t *st, DIRECTION d) {
+  switch (d) {
+    case UP:
+      to_top(st->buf);
+      break;
+    case DOWN:
+      to_bottom(st->buf);
+      break;
+    case LEFT:
+      to_left(st->buf);
+      break;
+    case RIGHT:
+      to_right(st->buf);
+      break;
+    default:
+      break;
+  }
 }
 
 void handle_insert(state_t *st, char c) {
