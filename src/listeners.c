@@ -33,30 +33,30 @@ void start_normal_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case 'j':
-      move_cursor(st, DOWN);
+      handle_move(st, DOWN);
       break;
     case 'k':
-      move_cursor(st, UP);
+      handle_move(st, UP);
       break;
     case 'h':
-      move_cursor(st, LEFT);
+      handle_move(st, LEFT);
       break;
     case 'l':
-      move_cursor(st, RIGHT);
+      handle_move(st, RIGHT);
       break;
     case '$':
-      to_right(st->buf);
+      handle_move_to_edge(st, RIGHT);
       break;
     case '0':
-      to_left(st->buf);
+      handle_move_to_edge(st, LEFT);
       break;
     case 'G':
-      to_bottom(st->buf);
+      handle_move_to_edge(st, DOWN);
       st->to_refresh = true;
       break;
     case 'g':
       if (st->prev_key == 'g') {
-        to_top(st->buf);
+        handle_move_to_edge(st, UP);
         st->to_refresh = true;
         reset_prev_key(st);
       } else {
@@ -76,7 +76,7 @@ void start_normal_listener(state_t *st) {
       }
       break;
     case 'I':
-      to_left(st->buf);
+      handle_move_to_edge(st, LEFT);
     case 'i':
       if (st->buf->current->line_size == 0) {
         st->mode = INSERT_BACK;
@@ -85,7 +85,7 @@ void start_normal_listener(state_t *st) {
       }
       break;
     case 'A':
-      to_right(st->buf);
+      handle_move_to_edge(st, RIGHT);
     case 'a':
       st->mode = INSERT_BACK;
       break;

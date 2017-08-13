@@ -49,63 +49,26 @@ typedef struct buffer {
 
 buffer_t *init_buffer(const char *filename);
 
-/*
- * Primitive add char
- */
 void add_char(row_t *r, char c);
 
-/*
- * Primitive drop char
- */
 void drop_char(row_t *r);
 
-/*
- * Append char to line then set the current char to new char
- */
 void append_char(buffer_t *buf, char c);
 
-/*
- * Prepend char to line then set the current char to new char
- */
 void prepend_char(buffer_t *buf, char c);
 
-/*
- * Delete current char and set 'current' to point to next char
- * if only NULL char is present, do nothing
- * if next char is NULL, point to the previous char
- */
 void delete_char(buffer_t *buf);
 
-/*
- * Add an empty line below the current line and set current to the new line
- */
 void append_row(buffer_t *buf, const char *line);
 
-/*
- * Add an empty line above the current line and set current to the new line
- */
 void prepend_row(buffer_t *buf, const char *line);
 
-/*
- * Join current row and the row above
- */
 void join_row(buffer_t *buf);
 
-/*
- * When user press enter in insert mode, we split the line into two
- * Current char becomes the head of the new line
- */
 void split_row(buffer_t *buf);
 
-/*
- * Move the cursor up/down/left/right
- * Do nothing if it reaches the end
- */
 void move_current(buffer_t *buf, DIRECTION d);
 
-/*
- * Move cursor all the way to the right
- */
 void to_right(buffer_t *buf);
 
 void to_left(buffer_t *buf);
@@ -113,16 +76,9 @@ void to_left(buffer_t *buf);
 void to_top(buffer_t *buf);
 
 void to_bottom(buffer_t *buf);
-/*
- * Make the row empty
- */
+
 void clear_row(row_t *r);
 
-/*
- * Delete current row and reset 'current' to point to the next row.
- * If next is null then set it to previous
- * If there is only one row left, we simply "clear" the row
- */
 void delete_row(buffer_t *buf);
 
 void destroy_buffer(buffer_t *buf);

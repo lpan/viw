@@ -140,6 +140,9 @@ buffer_t *init_buffer(const char *filename) {
   return buf;
 }
 
+/*
+ * Append char to line then set the current char to new char
+ */
 void append_char(buffer_t *buf, char c) {
   if (buf->current->line_size != 0) {
     buf->current_char ++;
@@ -148,6 +151,9 @@ void append_char(buffer_t *buf, char c) {
   add_char(buf->current, c);
 }
 
+/*
+ * Prepend char to line then set the current char to new char
+ */
 void prepend_char(buffer_t *buf, char c) {
   row_t *r = buf->current;
 
@@ -215,6 +221,11 @@ void drop_char(row_t *r) {
   free(to_delete);
 }
 
+/*
+ * Delete current char and set 'current' to point to next char
+ * if only NULL char is present, do nothing
+ * if next char is NULL, point to the previous char
+ */
 void delete_char(buffer_t *buf) {
   row_t *r = buf->current;
 
@@ -225,6 +236,9 @@ void delete_char(buffer_t *buf) {
   drop_char(buf->current);
 }
 
+/*
+ * Add an empty line below the current line and set current to the new line
+ */
 void append_row(buffer_t *buf, const char *line) {
   row_t *r = init_row(line);
   row_t *prev = NULL;
@@ -253,6 +267,9 @@ void append_row(buffer_t *buf, const char *line) {
   buf->current = r;
 }
 
+/*
+ * Add an empty line above the current line and set current to the new line
+ */
 void prepend_row(buffer_t *buf, const char *line) {
   // insert at head
   if (buf->head && buf->current == buf->head) {
@@ -327,6 +344,10 @@ static void move_right(buffer_t *buf) {
   }
 }
 
+/*
+ * Move the cursor up/down/left/right
+ * Do nothing if it reaches the end
+ */
 void move_current(buffer_t *buf, DIRECTION d) {
   switch (d) {
     case UP:
@@ -346,6 +367,9 @@ void move_current(buffer_t *buf, DIRECTION d) {
   }
 }
 
+/*
+ * Move cursor all the way to the right
+ */
 void to_right(buffer_t *buf) {
   for (size_t i = buf->current_char; i < buf->current->line_size; i ++) {
     move_current(buf, RIGHT);
@@ -372,6 +396,9 @@ void to_bottom(buffer_t *buf) {
   }
 }
 
+/*
+ * Join current row and the row above
+ */
 void join_row(buffer_t *buf) {
   // do nothing on top line
   if (!buf->current->prev) {
@@ -414,6 +441,10 @@ void join_row(buffer_t *buf) {
   move_current(buf, UP);
 }
 
+/*
+ * When user press enter in insert mode, we split the line into two
+ * Current char becomes the head of the new line
+ */
 void split_row(buffer_t *buf) {
   row_t *src = buf->current;
   size_t current_char = buf->current_char;
@@ -463,6 +494,11 @@ void clear_row(row_t *r) {
   r->line_size = 0;
 }
 
+/*
+ * Delete current row and reset 'current' to point to the next row.
+ * If next is null then set it to previous
+ * If there is only one row left, we simply "clear" the row
+ */
 void delete_row(buffer_t *buf) {
   row_t *to_delete = buf->current;
 
