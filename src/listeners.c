@@ -16,10 +16,8 @@ void start_listener(state_t *st) {
         start_normal_listener(st);
         break;
       case INSERT_FRONT:
-        start_insert_listener(st, prepend_char);
-        break;
       case INSERT_BACK:
-        start_insert_listener(st, append_char);
+        start_insert_listener(st);
         break;
       case EX:
         start_ex_listener(st);
@@ -131,7 +129,7 @@ void start_ex_listener(state_t *st) {
   }
 }
 
-void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
+void start_insert_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case '\n':
@@ -148,7 +146,7 @@ void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
       st->mode = NORMAL;
       break;
     default:
-      insert(st->buf, (char) ch);
+      handle_insert(st, (char) ch);
       break;
   }
 }
