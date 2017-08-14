@@ -52,24 +52,21 @@ void start_normal_listener(state_t *st) {
       break;
     case 'G':
       handle_move_to_edge(st, DOWN);
-      st->to_refresh = true;
       break;
     case 'g':
       if (st->prev_key == 'g') {
         handle_move_to_edge(st, UP);
-        st->to_refresh = true;
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'x':
-      delete_char(st->buf);
+      handle_delete_char(st);
       break;
     case 'd':
       if (st->prev_key == 'd') {
-        delete_row(st->buf);
-        st->to_refresh = true;
+        handle_delete_row(st);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
@@ -90,14 +87,10 @@ void start_normal_listener(state_t *st) {
       st->mode = INSERT_BACK;
       break;
     case 'o':
-      append_row(st->buf, NULL);
-      st->to_refresh = true;
-      st->mode = INSERT_BACK;
+      handle_append_row(st);
       break;
     case 'O':
-      prepend_row(st->buf, NULL);
-      st->to_refresh = true;
-      st->mode = INSERT_BACK;
+      handle_prepend_row(st);
       break;
     case ':':
       st->mode = EX;
@@ -141,13 +134,13 @@ void start_insert_listener(state_t *st) {
       break;
     case KEY_ESC:
       if (st->mode == INSERT_FRONT) {
-        move_current(st->buf, LEFT);
+        handle_move(st, LEFT);
       }
 
       st->mode = NORMAL;
       break;
     default:
-      handle_insert(st, (char) ch);
+      handle_insert_char(st, (char) ch);
       break;
   }
 }

@@ -19,9 +19,11 @@ void handle_move_to_edge(state_t *st, DIRECTION d) {
   switch (d) {
     case UP:
       to_top(st->buf);
+      st->to_refresh = true;
       break;
     case DOWN:
       to_bottom(st->buf);
+      st->to_refresh = true;
       break;
     case LEFT:
       to_left(st->buf);
@@ -34,7 +36,7 @@ void handle_move_to_edge(state_t *st, DIRECTION d) {
   }
 }
 
-void handle_insert(state_t *st, char c) {
+void handle_insert_char(state_t *st, char c) {
   if (st->mode == INSERT_FRONT) {
     prepend_char(st->buf, c);
   }
@@ -42,6 +44,27 @@ void handle_insert(state_t *st, char c) {
   if (st->mode == INSERT_BACK) {
     append_char(st->buf, c);
   }
+}
+
+void handle_append_row(state_t *st) {
+  append_row(st->buf, NULL);
+  st->to_refresh = true;
+  st->mode = INSERT_BACK;
+}
+
+void handle_prepend_row(state_t *st) {
+  prepend_row(st->buf, NULL);
+  st->to_refresh = true;
+  st->mode = INSERT_BACK;
+}
+
+void handle_delete_char(state_t *st) {
+  delete_char(st->buf);
+}
+
+void handle_delete_row(state_t *st) {
+  delete_row(st->buf);
+  st->to_refresh = true;
 }
 
 void handle_enter(state_t *st) {
