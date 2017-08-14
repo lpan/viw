@@ -3,7 +3,7 @@
 
 #define KEY_ESC 27
 
-#include "state.h"
+#include "controller.h"
 #include "buffer.h"
 
 // keypress listeners
@@ -15,6 +15,6 @@ void start_normal_listener(state_t *st);
 
 void start_ex_listener(state_t *st);
 
-void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char));
+void start_insert_listener(state_t *st);
 
 #endif
