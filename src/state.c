@@ -34,19 +34,22 @@ static void update_top_row(state_t *st) {
   size_t current_row = st->buf->current_row;
   size_t num_windows = st->scr->num_windows;
 
-  // scroll down
+  // when user is scrolling down
   if (current_row >= st->top_row + num_windows) {
     st->top_row = current_row - num_windows + 1;
     st->to_refresh = true;
   }
 
-  // scroll up
+  // when user is scrolling up
   if (current_row < st->top_row) {
     st->top_row = current_row;
     st->to_refresh = true;
   }
 }
 
+/*
+ * compute the space reserved for line number
+ */
 static void update_padding_front(state_t *st) {
   size_t max_row = st->buf->num_rows;
   size_t num_digits = 0;
