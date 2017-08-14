@@ -3,6 +3,7 @@
 #include "screen.h"
 #include "render.h"
 #include "state.h"
+#include "controller.h"
 #include "ex.h"
 #include "listeners.h"
 
@@ -16,10 +17,8 @@ void start_listener(state_t *st) {
         start_normal_listener(st);
         break;
       case INSERT_FRONT:
-        start_insert_listener(st, prepend_char);
-        break;
       case INSERT_BACK:
-        start_insert_listener(st, append_char);
+        start_insert_listener(st);
         break;
       case EX:
         start_ex_listener(st);
@@ -34,50 +33,47 @@ void start_normal_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case 'j':
-      move_cursor(st, DOWN);
+      handle_move(st, DOWN);
       break;
     case 'k':
-      move_cursor(st, UP);
+      handle_move(st, UP);
       break;
     case 'h':
-      move_cursor(st, LEFT);
+      handle_move(st, LEFT);
       break;
     case 'l':
-      move_cursor(st, RIGHT);
+      handle_move(st, RIGHT);
       break;
     case '$':
-      to_right(st->buf);
+      handle_move_to_edge(st, RIGHT);
       break;
     case '0':
-      to_left(st->buf);
+      handle_move_to_edge(st, LEFT);
       break;
     case 'G':
-      to_bottom(st->buf);
-      st->to_refresh = true;
+      handle_move_to_edge(st, DOWN);
       break;
     case 'g':
       if (st->prev_key == 'g') {
-        to_top(st->buf);
-        st->to_refresh = true;
+        handle_move_to_edge(st, UP);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'x':
-      delete_char(st->buf);
+      handle_delete_char(st);
       break;
     case 'd':
       if (st->prev_key == 'd') {
-        delete_row(st->buf);
-        st->to_refresh = true;
+        handle_delete_row(st);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'I':
-      to_left(st->buf);
+      handle_move_to_edge(st, LEFT);
     case 'i':
       if (st->buf->current->line_size == 0) {
         st->mode = INSERT_BACK;
@@ -86,19 +82,15 @@ void start_normal_listener(state_t *st) {
       }
       break;
     case 'A':
-      to_right(st->buf);
+      handle_move_to_edge(st, RIGHT);
     case 'a':
       st->mode = INSERT_BACK;
       break;
     case 'o':
-      append_row(st->buf, NULL);
-      st->to_refresh = true;
-      st->mode = INSERT_BACK;
+      handle_append_row(st);
       break;
     case 'O':
-      prepend_row(st->buf, NULL);
-      st->to_refresh = true;
-      st->mode = INSERT_BACK;
+      handle_prepend_row(st);
       break;
     case ':':
       st->mode = EX;
@@ -131,7 +123,7 @@ void start_ex_listener(state_t *st) {
   }
 }
 
-void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
+void start_insert_listener(state_t *st) {
   int ch = getch();
   switch (ch) {
     case '\n':
@@ -142,13 +134,13 @@ void start_insert_listener(state_t *st, void (*insert)(buffer_t *, char)) {
       break;
     case KEY_ESC:
       if (st->mode == INSERT_FRONT) {
-        move_current(st->buf, LEFT);
+        handle_move(st, LEFT);
       }
 
       st->mode = NORMAL;
       break;
     default:
-      insert(st->buf, (char) ch);
+      handle_insert_char(st, (char) ch);
       break;
   }
 }

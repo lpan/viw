@@ -40,22 +40,8 @@ typedef struct state {
 
 state_t *init_state(const char *filename);
 
-void update_state(state_t *st);
-
-void move_cursor(state_t *st, DIRECTION d);
-
-void handle_enter(state_t *st);
-
-/*
- * Joine two lines when backspace at the beginning of the line
- * Otherwise delete char in front of the cursor
- */
-void handle_backspace(state_t *st);
-
 void destroy_state(state_t *st);
 
-void set_prev_key(state_t *st, char c);
-
-void reset_prev_key(state_t *st);
+void update_state(state_t *st);
 
 #endif
