@@ -1,6 +1,11 @@
 #ifndef KEYPRESS_H
 #define KEYPRESS_H
 
+#ifdef __APPLE__
+    #undef KEY_BACKSPACE
+    #define KEY_BACKSPACE 127
+#endif 
+
 #define KEY_ESC 27
 
 #include "controller.h"
