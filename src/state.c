@@ -14,6 +14,9 @@ state_t *init_state(const char *filename) {
   st->buf = init_buffer(filename);
   st->scr = init_screen(LINES);
 
+  st->hs = init_history_stack();
+  st->fq = init_future_queue();
+
   st->prev_key = '\0';
 
   update_state(st);

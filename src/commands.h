@@ -28,20 +28,28 @@ typedef struct command {
   struct command *prev;
 } command_t;
 
-typedef struct command_queue {
-  struct command *head;
-  struct command *last;
-  struct command *current;
-} command_queue_t;
+typedef struct history_stack {
+  struct command *bottom;
+  struct command *top;
+} history_stack_t;
 
-command_queue_t *init_command_queue(void);
+typedef struct future_queue {
+  struct command *front;
+  struct command *back;
+} future_queue_t;
 
-void destroy_command_queue(command_queue_t *cq);
+future_queue_t *init_future_queue(void);
 
-void append_command(command_queue_t *cq, COMMAND_TYPE t, COMMAND_PAYLOAD p);
+history_stack_t *init_history_stack(void);
 
-void dispatch_command(command_t *c, state_t *st);
+void destroy_future_queue(future_queue_t *fq);
 
-void replay_til_current(command_queue_t *cq, state_t *st);
+void destroy_history_stack(history_stack_t *hs);
+
+void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p);
+
+void undo_command(state_t *st);
+
+void replay_history(state_t *st);
 
 #endif

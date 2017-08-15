@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "screen.h"
 #include "buffer.h"
+#include "commands.h"
 
 struct window;
 
@@ -20,6 +21,9 @@ typedef enum MODE {
 typedef struct state {
   buffer_t *buf;
   screen_t *scr;
+
+  history_stack_t *hs;
+  future_queue_t *fq;
 
   size_t cx, cy;
   size_t top_row;
