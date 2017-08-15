@@ -41,39 +41,7 @@ void destroy_future_queue(future_queue_t *fq) {
   free(fq);
 }
 
-static void dispatch_command(state_t *st, command_t *c) {
-  switch (c->type) {
-    case HANDLE_MOVE:
-      handle_move(st, c->payload.d);
-      break;
-    case HANDLE_MOVE_TO_EDGE:
-      handle_move_to_edge(st, c->payload.d);
-      break;
-    case HANDLE_INSERT_CHAR:
-      handle_insert_char(st, c->payload.c);
-      break;
-    case HANDLE_APPEND_ROW:
-      handle_append_row(st);
-      break;
-    case HANDLE_PREPEND_ROW:
-      handle_prepend_row(st);
-      break;
-    case HANDLE_DELETE_CHAR:
-      handle_delete_char(st);
-      break;
-    case HANDLE_DELETE_ROW:
-      handle_delete_row(st);
-      break;
-    case HANDLE_ENTER:
-      handle_enter(st);
-      break;
-    case HANDLE_BACKSPACE:
-      handle_backspace(st);
-      break;
-  }
-}
-
-static command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
+command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   command_t *c = malloc(sizeof(command_t));
   c->type = t;
   c->payload = p;
@@ -85,7 +53,7 @@ static command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
 // -------------------------
 // -- History Stack methods
 // -------------------------
-static void append_command(history_stack_t *hs, command_t *c) {
+command_t *append_command(history_stack_t *hs, command_t *c) {
   // assert valid state
   assert((!hs->top && !hs->bottom) || (hs->top && hs->bottom));
 
@@ -102,7 +70,7 @@ static void append_command(history_stack_t *hs, command_t *c) {
   return c;
 }
 
-static command_t *pop_command(history_stack_t *hs) {
+command_t *pop_command(history_stack_t *hs) {
   assert((!hs->top && !hs->bottom) || (hs->top && hs->bottom));
 
   if (!hs->top && !hs->bottom) {
@@ -126,7 +94,7 @@ static command_t *pop_command(history_stack_t *hs) {
 // -------------------------
 // -- Future Queue methods
 // -------------------------
-static void queue_command(future_queue_t *fq, command_t *c) {
+void queue_command(future_queue_t *fq, command_t *c) {
   assert((!fq->front && !fq->back) || (fq->front && fq->back));
 
   if (!fq->front && !fq->back) {
@@ -138,41 +106,4 @@ static void queue_command(future_queue_t *fq, command_t *c) {
   c->prev = fq->back;
   fq->back->next = c;
   fq->back = c;
-}
-
-
-// -------------------------
-// -- Public methods
-// -------------------------
-
-void replay_history(state_t *st) {
-  history_stack_t *hs = st->hs;
-  command_t *c = hs->bottom;
-
-  while (c) {
-    dispatch_command(st, c);
-    c = c->next;
-  }
-}
-
-/*
- * 1. create command
- * 2. push it to stack
- * 3. execute the command against state
- */
-void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
-  command_t *c = init_command(t, p);
-  append_command(st->hs, c);
-  dispatch_command(st, c);
-}
-
-/*
- * 1. pop history stack
- * 2. push the result from 1. to future queue
- * 3. replay_history()
- */
-void undo_command(state_t *st) {
-  command_t *c = pop_command(st->hs);
-  queue_command(st->fq, c);
-  replay_history(st);
 }

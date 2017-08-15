@@ -27,6 +27,8 @@ state_t *init_state(const char *filename) {
 void destroy_state(state_t *st) {
   destroy_buffer(st->buf);
   destroy_screen(st->scr);
+  destroy_future_queue(st->fq);
+  destroy_history_stack(st->hs);
   free(st);
 }
 

@@ -1,7 +1,7 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-#include "state.h"
+#include "buffer.h"
 
 typedef enum COMMAND_TYPE {
   HANDLE_MOVE,
@@ -46,10 +46,12 @@ void destroy_future_queue(future_queue_t *fq);
 
 void destroy_history_stack(history_stack_t *hs);
 
-void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p);
+command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
-void undo_command(state_t *st);
+command_t *append_command(history_stack_t *hs, command_t *c);
 
-void replay_history(state_t *st);
+command_t *pop_command(history_stack_t *hs);
+
+void queue_command(future_queue_t *fq, command_t *c);
 
 #endif

@@ -6,6 +6,7 @@
 #include "screen.h"
 #include "buffer.h"
 #include "state.h"
+#include "commands.h"
 #include "controller.h"
 
 // -----------
@@ -146,4 +147,71 @@ void set_prev_key(state_t *st, char c) {
 
 void reset_prev_key(state_t *st) {
   st->prev_key = '\0';
+}
+
+// ------------
+// Undo & Redo
+// ------------
+static void dispatch_command(state_t *st, command_t *c) {
+  switch (c->type) {
+    case HANDLE_MOVE:
+      handle_move(st, c->payload.d);
+      break;
+    case HANDLE_MOVE_TO_EDGE:
+      handle_move_to_edge(st, c->payload.d);
+      break;
+    case HANDLE_INSERT_CHAR:
+      handle_insert_char(st, c->payload.c);
+      break;
+    case HANDLE_APPEND_ROW:
+      handle_append_row(st);
+      break;
+    case HANDLE_PREPEND_ROW:
+      handle_prepend_row(st);
+      break;
+    case HANDLE_DELETE_CHAR:
+      handle_delete_char(st);
+      break;
+    case HANDLE_DELETE_ROW:
+      handle_delete_row(st);
+      break;
+    case HANDLE_ENTER:
+      handle_enter(st);
+      break;
+    case HANDLE_BACKSPACE:
+      handle_backspace(st);
+      break;
+  }
+}
+
+void replay_history(state_t *st) {
+  history_stack_t *hs = st->hs;
+  command_t *c = hs->bottom;
+
+  while (c) {
+    dispatch_command(st, c);
+    c = c->next;
+  }
+}
+
+/*
+ * 1. create command
+ * 2. push it to stack
+ * 3. execute the command against state
+ */
+void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
+  command_t *c = init_command(t, p);
+  append_command(st->hs, c);
+  dispatch_command(st, c);
+}
+
+/*
+ * 1. pop history stack
+ * 2. push the result from 1. to future queue
+ * 3. replay_history()
+ */
+void undo_command(state_t *st) {
+  command_t *c = pop_command(st->hs);
+  queue_command(st->fq, c);
+  replay_history(st);
 }
