@@ -112,6 +112,9 @@ void start_ex_listener(state_t *st) {
     case KEY_BACKSPACE:
       handle_backspace(st);
       break;
+    case KEY_ESC:
+      st->mode = NORMAL;
+      break;
     default:
       add_char(st->buf->status_row, (char) ch);
       break;
