@@ -6,8 +6,9 @@ run:
 	@./viw test.txt
 	@rm viw
 
+
 build:
-	@$(CC) src/*.c -o viw $(FLAGS)
+	@$(CC) src/*.c -o viw $(FLAGS) 
 
 clean:
 	rm -f viw *~

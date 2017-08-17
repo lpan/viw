@@ -37,6 +37,7 @@ void handle_move_to_edge(state_t *st, DIRECTION d) {
 }
 
 void handle_insert_char(state_t *st, char c) {
+  st->to_save = true;
   if (st->mode == INSERT_FRONT) {
     prepend_char(st->buf, c);
   }
@@ -49,22 +50,26 @@ void handle_insert_char(state_t *st, char c) {
 void handle_append_row(state_t *st) {
   append_row(st->buf, NULL);
   st->to_refresh = true;
+  st->to_save = true;
   st->mode = INSERT_BACK;
 }
 
 void handle_prepend_row(state_t *st) {
   prepend_row(st->buf, NULL);
   st->to_refresh = true;
+  st->to_save = true;
   st->mode = INSERT_BACK;
 }
 
 void handle_delete_char(state_t *st) {
   delete_char(st->buf);
+  st->to_save = true;
 }
 
 void handle_delete_row(state_t *st) {
   delete_row(st->buf);
   st->to_refresh = true;
+  st->to_save = true;
 }
 
 void handle_enter(state_t *st) {
@@ -74,6 +79,7 @@ void handle_enter(state_t *st) {
     split_row(st->buf);
     delete_char(st->buf);
     st->to_refresh = true;
+    st->to_save = true;
     return;
   }
 
@@ -86,6 +92,7 @@ void handle_enter(state_t *st) {
 
   split_row(st->buf);
   st->to_refresh = true;
+  st->to_save = true;
 }
 
 /*
@@ -105,6 +112,7 @@ void handle_backspace(state_t *st) {
     if (!r->current->prev) {
       join_row(st->buf);
       st->to_refresh = true;
+      st->to_save = true;
       return;
     }
 
@@ -113,6 +121,7 @@ void handle_backspace(state_t *st) {
   }
 
   if (st->mode == INSERT_BACK) {
+    st->to_save = true;
     if (!r->current) {
       join_row(st->buf);
       st->to_refresh = true;

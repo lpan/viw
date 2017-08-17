@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "buffer.h"
+#include "error.h"
 
 /*
  * Read file to buffer
@@ -504,7 +505,12 @@ void delete_row(buffer_t *buf) {
 
   // there is at least one row in buffer
   if (buf->num_rows == 1) {
-    clear_row(buf->current);
+    AUTO_RELEASE_LOG_BLOCK(
+      E_LOG_ERR("before");
+      // ok so looks like this function is throwing errors 
+      clear_row(buf->current);
+      E_LOG_ERR("after");
+    )
     return;
   }
 
@@ -525,6 +531,8 @@ void delete_row(buffer_t *buf) {
 
   buf->num_rows --;
   destroy_row(to_delete);
+
+
 }
 
 void destroy_buffer(buffer_t *buf) {

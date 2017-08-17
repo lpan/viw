@@ -70,11 +70,22 @@ void ex_match_action(state_t *st) {
   char *command = to_string(st->buf->status_row->head->next, st->buf->status_row->line_size);
 
   if (CMP2(command, "q", "quit")) {
+    if(st->to_save){
+      st->mode = NORMAL;
+      st->error_code = 37;
+    }else{
+      free(command);
+      quit(st);
+    }
+  } else if (CMP1(command, "q!")) {
     free(command);
     quit(st);
   } else if (CMP1(command, "w")) {
+    st->error_code = 0;
+    st->to_save = false;
     free(command);
     save(st);
+    st->to_save = false;
   } else if (CMP1(command, "wq")) {
     free(command);
     save(st);

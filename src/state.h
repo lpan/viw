@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "screen.h"
 #include "buffer.h"
+#include "error.h"
 
 struct window;
 
@@ -30,6 +31,12 @@ typedef struct state {
 
   // rerender all windows if it is true
   bool to_refresh;
+
+  // prevent app from closing 
+  bool to_save;
+
+  // if error_code != 0, status line will render error message 
+  int error_code;
 
   // support two char commands such as 'gg', 'dd'
   char prev_key;

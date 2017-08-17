@@ -16,6 +16,9 @@ state_t *init_state(const char *filename) {
 
   st->prev_key = '\0';
 
+  st->to_save = false;
+  st->error_code = 0;
+
   update_state(st);
 
   return st;
@@ -65,11 +68,14 @@ static void update_padding_front(state_t *st) {
 static void update_mode_status(state_t *st) {
   const char *insert_mode = "-- INSERT --";
   const char *normal_mode = "-- NORMAL --";
+  const char *error_msg = e_get_error_message(st->error_code);
 
   const char *text;
 
   if (st->mode == INSERT_BACK || st->mode == INSERT_FRONT) {
     text = insert_mode;
+  } else if (st->error_code != 0 && st->mode == NORMAL){
+    text = error_msg; 
   } else if (st->mode == NORMAL) {
     text = normal_mode;
   } else {
