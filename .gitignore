@@ -36,3 +36,6 @@ vgcore.*
 # Debug files
 *.dSYM/
 *.su
+.vscode/
+*.swp
+*.log

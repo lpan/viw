@@ -505,12 +505,7 @@ void delete_row(buffer_t *buf) {
 
   // there is at least one row in buffer
   if (buf->num_rows == 1) {
-    AUTO_RELEASE_LOG_BLOCK(
-      E_LOG_ERR("before");
-      // ok so looks like this function is throwing errors 
-      clear_row(buf->current);
-      E_LOG_ERR("after");
-    )
+    clear_row(buf->current);
     return;
   }
 
