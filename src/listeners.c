@@ -31,49 +31,60 @@ void start_listener(state_t *st) {
 
 void start_normal_listener(state_t *st) {
   int ch = getch();
+  COMMAND_PAYLOAD p;
+
   switch (ch) {
     case 'j':
-      handle_move(st, DOWN);
+      p.d = DOWN;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'k':
-      handle_move(st, UP);
+      p.d = UP;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'h':
-      handle_move(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'l':
-      handle_move(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case '$':
-      handle_move_to_edge(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case '0':
-      handle_move_to_edge(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case 'G':
-      handle_move_to_edge(st, DOWN);
+      p.d = DOWN;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case 'g':
       if (st->prev_key == 'g') {
-        handle_move_to_edge(st, UP);
+        p.d = UP;
+        apply_command(st, HANDLE_MOVE_TO_EDGE, p);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'x':
-      handle_delete_char(st);
+      apply_command(st, HANDLE_DELETE_CHAR, p);
       break;
     case 'd':
       if (st->prev_key == 'd') {
-        handle_delete_row(st);
+        apply_command(st, HANDLE_DELETE_ROW, p);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'I':
-      handle_move_to_edge(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'i':
       if (st->buf->current->line_size == 0) {
         st->mode = INSERT_BACK;
@@ -82,15 +93,16 @@ void start_normal_listener(state_t *st) {
       }
       break;
     case 'A':
-      handle_move_to_edge(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'a':
       st->mode = INSERT_BACK;
       break;
     case 'o':
-      handle_append_row(st);
+      apply_command(st, HANDLE_APPEND_ROW, p);
       break;
     case 'O':
-      handle_prepend_row(st);
+      apply_command(st, HANDLE_PREPEND_ROW, p);
       break;
     case ':':
       st->mode = EX;
