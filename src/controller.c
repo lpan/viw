@@ -208,16 +208,43 @@ void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   command_t *c = init_command(t, p);
   append_command(st->hs, c);
   dispatch_command(st, c);
+
+  // FIXME kill this when implemented redo
+  destroy_command_stack(st->rs);
+  st->rs = init_command_stack();
 }
 
 /*
  * 1. pop history stack
- * 2. push the result from 1. to future queue
- * 3. replay_history()
+ * 2. push the result from 1. to redo stack
+ * 3. Repeat step 1 if necessary
+ * 4. replay_history()
  */
 void undo_command(state_t *st) {
   command_t *c = pop_command(st->hs);
-  queue_command(st->fq, c);
+  append_command(st->rs, c);
+
+  // we only want to undo buffer-mutating commands
+  while (c && is_nav_command(c)) {
+    c = pop_command(st->hs);
+    append_command(st->rs, c);
+  }
+
+  // if loop exits because stack is empty, we want to go back to the nearest
+  // buffer-mutating command
+  if (!c) {
+    c = pop_command(st->rs);
+    append_command(st->hs, c);
+    while (c && is_nav_command(c)) {
+      c = pop_command(st->rs);
+      append_command(st->hs, c);
+    }
+
+    if (!c || !is_nav_command(c)) {
+      return;
+    }
+  }
+
   replay_history(st);
   st->to_refresh = true;
 }
