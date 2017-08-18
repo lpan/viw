@@ -4,7 +4,6 @@
 state_t *init_state(const char *filename) {
   state_t *st = malloc(sizeof(state_t));
 
-  st->mode = NORMAL;
   st->cx = 0;
   st->cy = 0;
   st->top_row = 0;
@@ -76,9 +75,9 @@ static void update_mode_status(state_t *st) {
 
   const char *text;
 
-  if (st->mode == INSERT_BACK || st->mode == INSERT_FRONT) {
+  if (st->buf->mode == INSERT_BACK || st->buf->mode == INSERT_FRONT) {
     text = insert_mode;
-  } else if (st->mode == NORMAL) {
+  } else if (st->buf->mode == NORMAL) {
     text = normal_mode;
   } else {
     return;
@@ -114,11 +113,11 @@ static void update_cursor_position(state_t *st) {
     st->cx = current_char;
   }
 
-  if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
+  if (st->buf->mode == INSERT_BACK && st->buf->current->line_size != 0) {
     st->cx ++;
   }
 
-  if (st->mode == EX) {
+  if (st->buf->mode == EX) {
     st->cy = st->scr->num_windows;
     st->cx = st->buf->status_row->line_size;
   } else {

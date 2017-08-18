@@ -12,7 +12,7 @@ void start_listener(state_t *st) {
     update_state(st);
     render_update(st);
 
-    switch (st->mode) {
+    switch (st->buf->mode) {
       case NORMAL:
         start_normal_listener(st);
         break;
@@ -87,16 +87,16 @@ void start_normal_listener(state_t *st) {
       apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'i':
       if (st->buf->current->line_size == 0) {
-        st->mode = INSERT_BACK;
+        st->buf->mode = INSERT_BACK;
       } else {
-        st->mode = INSERT_FRONT;
+        st->buf->mode = INSERT_FRONT;
       }
       break;
     case 'A':
       p.d = RIGHT;
       apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'a':
-      st->mode = INSERT_BACK;
+      st->buf->mode = INSERT_BACK;
       break;
     case 'o':
       apply_command(st, HANDLE_APPEND_ROW, p);
@@ -105,7 +105,7 @@ void start_normal_listener(state_t *st) {
       apply_command(st, HANDLE_PREPEND_ROW, p);
       break;
     case ':':
-      st->mode = EX;
+      st->buf->mode = EX;
       clear_row(st->buf->status_row);
       add_char(st->buf->status_row, ':');
       break;
@@ -119,13 +119,13 @@ void start_ex_listener(state_t *st) {
   switch (ch) {
     case '\n':
       ex_match_action(st);
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     case KEY_BACKSPACE:
       handle_backspace(st);
       break;
     case KEY_ESC:
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     default:
       add_char(st->buf->status_row, (char) ch);
@@ -134,7 +134,7 @@ void start_ex_listener(state_t *st) {
 
   // exit EX mode when status bar is empty
   if (st->buf->status_row->line_size == 0) {
-    st->mode = NORMAL;
+    st->buf->mode = NORMAL;
   }
 }
 
@@ -148,11 +148,11 @@ void start_insert_listener(state_t *st) {
       handle_backspace(st);
       break;
     case KEY_ESC:
-      if (st->mode == INSERT_FRONT) {
+      if (st->buf->mode == INSERT_FRONT) {
         handle_move(st, LEFT);
       }
 
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     default:
       handle_insert_char(st, (char) ch);

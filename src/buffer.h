@@ -11,6 +11,14 @@ typedef enum DIRECTION {
   LEFT
 } DIRECTION;
 
+typedef enum MODE {
+  NORMAL,
+  INSERT_FRONT,
+  INSERT_BACK,
+  VISUAL,
+  EX
+} MODE;
+
 typedef struct echar {
   char c;
   struct echar *prev;
@@ -45,6 +53,9 @@ typedef struct buffer {
 
   bool is_dirty;
   const char *filename;
+
+  // insert/normal/visual/ex
+  MODE mode;
 } buffer_t;
 
 buffer_t *init_buffer(const char *filename);

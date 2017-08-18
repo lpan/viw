@@ -119,6 +119,8 @@ buffer_t *init_buffer(const char *filename) {
   buf->is_dirty = false;
   buf->filename = filename;
 
+  buf->mode = NORMAL;
+
   read_file(buf, filename);
 
   // we want to start at the top when user opens up a new file
