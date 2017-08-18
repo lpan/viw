@@ -109,8 +109,8 @@ void start_normal_listener(state_t *st) {
       break;
     case ':':
       st->buf->mode = EX;
-      clear_row(st->buf->status_row);
-      add_char(st->buf->status_row, ':');
+      clear_row(st->status_row);
+      add_char(st->status_row, ':');
       break;
     default:
       break;
@@ -131,12 +131,12 @@ void start_ex_listener(state_t *st) {
       st->buf->mode = NORMAL;
       break;
     default:
-      add_char(st->buf->status_row, (char) ch);
+      add_char(st->status_row, (char) ch);
       break;
   }
 
   // exit EX mode when status bar is empty
-  if (st->buf->status_row->line_size == 0) {
+  if (st->status_row->line_size == 0) {
     st->buf->mode = NORMAL;
   }
 }

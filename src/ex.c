@@ -67,7 +67,7 @@ static void save(state_t *st) {
 
 void ex_match_action(state_t *st) {
   // first char is ':'
-  char *command = to_string(st->buf->status_row->head->next, st->buf->status_row->line_size);
+  char *command = to_string(st->status_row->head->next, st->status_row->line_size);
 
   if (CMP2(command, "q", "quit")) {
     free(command);

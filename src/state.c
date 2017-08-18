@@ -1,4 +1,5 @@
 #include "state.h"
+#include "buffer.h"
 #include <string.h>
 
 state_t *init_state(const char *filename) {
@@ -16,6 +17,7 @@ state_t *init_state(const char *filename) {
   st->hs = init_history_stack();
   st->fq = init_future_queue();
 
+  st->status_row = init_row(NULL);
   st->prev_key = '\0';
 
   update_state(st);
@@ -26,6 +28,7 @@ state_t *init_state(const char *filename) {
 void destroy_state(state_t *st) {
   destroy_buffer(st->buf);
   destroy_screen(st->scr);
+  destroy_row(st->status_row);
   destroy_future_queue(st->fq);
   destroy_history_stack(st->hs);
   free(st);
@@ -83,9 +86,9 @@ static void update_mode_status(state_t *st) {
     return;
   }
 
-  clear_row(st->buf->status_row);
+  clear_row(st->status_row);
   for (size_t i = 0; i < strlen(text); i ++) {
-    add_char(st->buf->status_row, text[i]);
+    add_char(st->status_row, text[i]);
   }
 }
 
@@ -119,7 +122,7 @@ static void update_cursor_position(state_t *st) {
 
   if (st->buf->mode == EX) {
     st->cy = st->scr->num_windows;
-    st->cx = st->buf->status_row->line_size;
+    st->cx = st->status_row->line_size;
   } else {
     st->cx = st->cx + st->padding_front + 1;
   }
@@ -138,7 +141,7 @@ static void update_cursor_position(state_t *st) {
 static void update_scr_windows(state_t *st) {
   // link status window and its buffer
   if (!st->scr->status_window->r) {
-    st->scr->status_window->r = st->buf->status_row;
+    st->scr->status_window->r = st->status_row;
   }
 
   size_t current_row = st->buf->current_row;

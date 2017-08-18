@@ -41,9 +41,6 @@ typedef struct buffer {
   row_t *head;
   row_t *last;
 
-  // buffer for the status line
-  row_t *status_row;
-
   // total number of rows out there
   size_t num_rows;
 
@@ -69,6 +66,10 @@ void append_char(buffer_t *buf, char c);
 void prepend_char(buffer_t *buf, char c);
 
 void delete_char(buffer_t *buf);
+
+row_t *init_row(const char *line);
+
+void destroy_row(row_t *r);
 
 void append_row(buffer_t *buf, const char *line);
 

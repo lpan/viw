@@ -99,7 +99,7 @@ void handle_backspace(state_t *st) {
 
   if (st->buf->mode == EX) {
     move_current(st->buf, LEFT);
-    drop_char(buf->status_row);
+    drop_char(st->status_row);
   }
 
   if (st->buf->mode == INSERT_FRONT) {

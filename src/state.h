@@ -27,6 +27,9 @@ typedef struct state {
 
   // support two char commands such as 'gg', 'dd'
   char prev_key;
+
+  // buffer for the status line
+  row_t *status_row;
 } state_t;
 
 state_t *init_state(const char *filename);

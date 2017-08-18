@@ -72,7 +72,7 @@ void add_char(row_t *r, char c) {
 /*
  * Init a row with a NULL char at the beginning
  */
-static row_t *init_row(const char *line) {
+row_t *init_row(const char *line) {
   row_t *r = malloc(sizeof(row_t));
 
   r->next = NULL;
@@ -97,7 +97,7 @@ static row_t *init_row(const char *line) {
   return r;
 }
 
-static void destroy_row(row_t *r) {
+void destroy_row(row_t *r) {
   echar_t *c = r->head, *tmp;
   while (c) {
     tmp = c;
@@ -114,7 +114,6 @@ buffer_t *init_buffer(const char *filename) {
   buf->head = NULL;
   buf->last = NULL;
   buf->current = NULL;
-  buf->status_row = init_row(NULL);
 
   buf->is_dirty = false;
   buf->filename = filename;
@@ -538,6 +537,5 @@ void destroy_buffer(buffer_t *buf) {
     destroy_row(tmp);
   }
 
-  destroy_row(buf->status_row);
   free(buf);
 }
