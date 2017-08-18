@@ -83,8 +83,10 @@ command_t *pop_command(history_stack_t *hs) {
   if (popped->prev == NULL) {
     hs->top = NULL;
     hs->bottom = NULL;
+    return popped;
   }
 
+  hs->top = popped->prev;
   popped->prev->next = NULL;
   popped->prev = NULL;
   return popped;
@@ -94,16 +96,22 @@ command_t *pop_command(history_stack_t *hs) {
 // -------------------------
 // -- Future Queue methods
 // -------------------------
-void queue_command(future_queue_t *fq, command_t *c) {
+command_t *queue_command(future_queue_t *fq, command_t *c) {
   assert((!fq->front && !fq->back) || (fq->front && fq->back));
+
+  if (!c) {
+    return NULL;
+  }
 
   if (!fq->front && !fq->back) {
     fq->front = c;
     fq->back = c;
-    return;
+    return c;
   }
 
   c->prev = fq->back;
   fq->back->next = c;
   fq->back = c;
+
+  return c;
 }

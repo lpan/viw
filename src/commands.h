@@ -52,6 +52,6 @@ command_t *append_command(history_stack_t *hs, command_t *c);
 
 command_t *pop_command(history_stack_t *hs);
 
-void queue_command(future_queue_t *fq, command_t *c);
+command_t *queue_command(future_queue_t *fq, command_t *c);
 
 #endif

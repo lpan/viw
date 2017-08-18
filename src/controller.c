@@ -188,6 +188,11 @@ void replay_history(state_t *st) {
   history_stack_t *hs = st->hs;
   command_t *c = hs->bottom;
 
+  // TODO copy init buffer but not reconstruct it
+  buffer_t *old_buf = st->buf;
+  st->buf = init_buffer(old_buf->filename);
+  destroy_buffer(old_buf);
+
   while (c) {
     dispatch_command(st, c);
     c = c->next;

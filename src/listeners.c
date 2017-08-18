@@ -104,6 +104,9 @@ void start_normal_listener(state_t *st) {
     case 'O':
       apply_command(st, HANDLE_PREPEND_ROW, p);
       break;
+    case 'u':
+      undo_command(st);
+      break;
     case ':':
       st->buf->mode = EX;
       clear_row(st->buf->status_row);
