@@ -219,4 +219,5 @@ void undo_command(state_t *st) {
   command_t *c = pop_command(st->hs);
   queue_command(st->fq, c);
   replay_history(st);
+  st->to_refresh = true;
 }
