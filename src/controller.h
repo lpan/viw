@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "state.h"
 #include "buffer.h"
+#include "commands.h"
 
 void handle_move(state_t *st, DIRECTION d);
 
@@ -26,5 +27,11 @@ void handle_backspace(state_t *st);
 void set_prev_key(state_t *st, char c);
 
 void reset_prev_key(state_t *st);
+
+void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p);
+
+void undo_command(state_t *st);
+
+void replay_history(state_t *st);
 
 #endif

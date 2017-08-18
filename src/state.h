@@ -6,20 +6,14 @@
 #include <stdlib.h>
 #include "screen.h"
 #include "buffer.h"
-
-struct window;
-
-typedef enum MODE {
-  NORMAL,
-  INSERT_FRONT,
-  INSERT_BACK,
-  VISUAL,
-  EX
-} MODE;
+#include "commands.h"
 
 typedef struct state {
   buffer_t *buf;
   screen_t *scr;
+
+  command_stack_t *hs;
+  command_stack_t *rs;
 
   size_t cx, cy;
   size_t top_row;
@@ -34,8 +28,8 @@ typedef struct state {
   // support two char commands such as 'gg', 'dd'
   char prev_key;
 
-  // insert/normal/visual/ex
-  MODE mode;
+  // buffer for the status line
+  row_t *status_row;
 } state_t;
 
 state_t *init_state(const char *filename);

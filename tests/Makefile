@@ -6,6 +6,11 @@ buffer:
 	valgrind --leak-check=yes ./test
 	@rm test
 
+commands:
+	@$(CC) $(FLAGS) ../src/commands.c ./commands-test.c -o test
+	valgrind --leak-check=yes ./test
+	@rm test
+
 state:
 	@$(CC) $(FLAGS) ../src/buffer.c ../src/screen.c ../src/state.c ./state-test.c -o test
 	valgrind --leak-check=yes ./test

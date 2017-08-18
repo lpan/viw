@@ -20,5 +20,8 @@ mem:
 test-buffer:
 	@$(MAKE) -C tests buffer
 
+test-commands:
+	@$(MAKE) -C tests commands
+
 test-state:
 	@$(MAKE) -C tests state

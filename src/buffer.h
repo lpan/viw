@@ -11,6 +11,14 @@ typedef enum DIRECTION {
   LEFT
 } DIRECTION;
 
+typedef enum MODE {
+  NORMAL,
+  INSERT_FRONT,
+  INSERT_BACK,
+  VISUAL,
+  EX
+} MODE;
+
 typedef struct echar {
   char c;
   struct echar *prev;
@@ -33,9 +41,6 @@ typedef struct buffer {
   row_t *head;
   row_t *last;
 
-  // buffer for the status line
-  row_t *status_row;
-
   // total number of rows out there
   size_t num_rows;
 
@@ -45,6 +50,9 @@ typedef struct buffer {
 
   bool is_dirty;
   const char *filename;
+
+  // insert/normal/visual/ex
+  MODE mode;
 } buffer_t;
 
 buffer_t *init_buffer(const char *filename);
@@ -58,6 +66,10 @@ void append_char(buffer_t *buf, char c);
 void prepend_char(buffer_t *buf, char c);
 
 void delete_char(buffer_t *buf);
+
+row_t *init_row(const char *line);
+
+void destroy_row(row_t *r);
 
 void append_row(buffer_t *buf, const char *line);
 

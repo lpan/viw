@@ -12,7 +12,7 @@ void start_listener(state_t *st) {
     update_state(st);
     render_update(st);
 
-    switch (st->mode) {
+    switch (st->buf->mode) {
       case NORMAL:
         start_normal_listener(st);
         break;
@@ -31,71 +31,86 @@ void start_listener(state_t *st) {
 
 void start_normal_listener(state_t *st) {
   int ch = getch();
+  COMMAND_PAYLOAD p;
+
   switch (ch) {
     case 'j':
-      handle_move(st, DOWN);
+      p.d = DOWN;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'k':
-      handle_move(st, UP);
+      p.d = UP;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'h':
-      handle_move(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case 'l':
-      handle_move(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE, p);
       break;
     case '$':
-      handle_move_to_edge(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case '0':
-      handle_move_to_edge(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case 'G':
-      handle_move_to_edge(st, DOWN);
+      p.d = DOWN;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
       break;
     case 'g':
       if (st->prev_key == 'g') {
-        handle_move_to_edge(st, UP);
+        p.d = UP;
+        apply_command(st, HANDLE_MOVE_TO_EDGE, p);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'x':
-      handle_delete_char(st);
+      apply_command(st, HANDLE_DELETE_CHAR, p);
       break;
     case 'd':
       if (st->prev_key == 'd') {
-        handle_delete_row(st);
+        apply_command(st, HANDLE_DELETE_ROW, p);
         reset_prev_key(st);
       } else {
         set_prev_key(st, (char) ch);
       }
       break;
     case 'I':
-      handle_move_to_edge(st, LEFT);
+      p.d = LEFT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'i':
       if (st->buf->current->line_size == 0) {
-        st->mode = INSERT_BACK;
+        st->buf->mode = INSERT_BACK;
       } else {
-        st->mode = INSERT_FRONT;
+        st->buf->mode = INSERT_FRONT;
       }
       break;
     case 'A':
-      handle_move_to_edge(st, RIGHT);
+      p.d = RIGHT;
+      apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'a':
-      st->mode = INSERT_BACK;
+      st->buf->mode = INSERT_BACK;
       break;
     case 'o':
-      handle_append_row(st);
+      apply_command(st, HANDLE_APPEND_ROW, p);
       break;
     case 'O':
-      handle_prepend_row(st);
+      apply_command(st, HANDLE_PREPEND_ROW, p);
+      break;
+    case 'u':
+      undo_command(st);
       break;
     case ':':
-      st->mode = EX;
-      clear_row(st->buf->status_row);
-      add_char(st->buf->status_row, ':');
+      st->buf->mode = EX;
+      clear_row(st->status_row);
+      add_char(st->status_row, ':');
       break;
     default:
       break;
@@ -107,22 +122,22 @@ void start_ex_listener(state_t *st) {
   switch (ch) {
     case '\n':
       ex_match_action(st);
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     case KEY_BACKSPACE:
       handle_backspace(st);
       break;
     case KEY_ESC:
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     default:
-      add_char(st->buf->status_row, (char) ch);
+      add_char(st->status_row, (char) ch);
       break;
   }
 
   // exit EX mode when status bar is empty
-  if (st->buf->status_row->line_size == 0) {
-    st->mode = NORMAL;
+  if (st->status_row->line_size == 0) {
+    st->buf->mode = NORMAL;
   }
 }
 
@@ -136,11 +151,11 @@ void start_insert_listener(state_t *st) {
       handle_backspace(st);
       break;
     case KEY_ESC:
-      if (st->mode == INSERT_FRONT) {
+      if (st->buf->mode == INSERT_FRONT) {
         handle_move(st, LEFT);
       }
 
-      st->mode = NORMAL;
+      st->buf->mode = NORMAL;
       break;
     default:
       handle_insert_char(st, (char) ch);

@@ -1,10 +1,10 @@
 #include "state.h"
+#include "buffer.h"
 #include <string.h>
 
 state_t *init_state(const char *filename) {
   state_t *st = malloc(sizeof(state_t));
 
-  st->mode = NORMAL;
   st->cx = 0;
   st->cy = 0;
   st->top_row = 0;
@@ -14,6 +14,12 @@ state_t *init_state(const char *filename) {
   st->buf = init_buffer(filename);
   st->scr = init_screen(LINES);
 
+  // history stack
+  st->hs = init_command_stack();
+  // redo stack
+  st->rs = init_command_stack();
+
+  st->status_row = init_row(NULL);
   st->prev_key = '\0';
 
   update_state(st);
@@ -24,6 +30,9 @@ state_t *init_state(const char *filename) {
 void destroy_state(state_t *st) {
   destroy_buffer(st->buf);
   destroy_screen(st->scr);
+  destroy_row(st->status_row);
+  destroy_command_stack(st->hs);
+  destroy_command_stack(st->rs);
   free(st);
 }
 
@@ -34,19 +43,22 @@ static void update_top_row(state_t *st) {
   size_t current_row = st->buf->current_row;
   size_t num_windows = st->scr->num_windows;
 
-  // scroll down
+  // when user is scrolling down
   if (current_row >= st->top_row + num_windows) {
     st->top_row = current_row - num_windows + 1;
     st->to_refresh = true;
   }
 
-  // scroll up
+  // when user is scrolling up
   if (current_row < st->top_row) {
     st->top_row = current_row;
     st->to_refresh = true;
   }
 }
 
+/*
+ * compute the space reserved for line number
+ */
 static void update_padding_front(state_t *st) {
   size_t max_row = st->buf->num_rows;
   size_t num_digits = 0;
@@ -68,17 +80,17 @@ static void update_mode_status(state_t *st) {
 
   const char *text;
 
-  if (st->mode == INSERT_BACK || st->mode == INSERT_FRONT) {
+  if (st->buf->mode == INSERT_BACK || st->buf->mode == INSERT_FRONT) {
     text = insert_mode;
-  } else if (st->mode == NORMAL) {
+  } else if (st->buf->mode == NORMAL) {
     text = normal_mode;
   } else {
     return;
   }
 
-  clear_row(st->buf->status_row);
+  clear_row(st->status_row);
   for (size_t i = 0; i < strlen(text); i ++) {
-    add_char(st->buf->status_row, text[i]);
+    add_char(st->status_row, text[i]);
   }
 }
 
@@ -106,13 +118,13 @@ static void update_cursor_position(state_t *st) {
     st->cx = current_char;
   }
 
-  if (st->mode == INSERT_BACK && st->buf->current->line_size != 0) {
+  if (st->buf->mode == INSERT_BACK && st->buf->current->line_size != 0) {
     st->cx ++;
   }
 
-  if (st->mode == EX) {
+  if (st->buf->mode == EX) {
     st->cy = st->scr->num_windows;
-    st->cx = st->buf->status_row->line_size;
+    st->cx = st->status_row->line_size;
   } else {
     st->cx = st->cx + st->padding_front + 1;
   }
@@ -131,7 +143,7 @@ static void update_cursor_position(state_t *st) {
 static void update_scr_windows(state_t *st) {
   // link status window and its buffer
   if (!st->scr->status_window->r) {
-    st->scr->status_window->r = st->buf->status_row;
+    st->scr->status_window->r = st->status_row;
   }
 
   size_t current_row = st->buf->current_row;
