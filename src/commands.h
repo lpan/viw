@@ -28,30 +28,21 @@ typedef struct command {
   struct command *prev;
 } command_t;
 
-typedef struct history_stack {
+typedef struct command_stack {
   struct command *bottom;
   struct command *top;
-} history_stack_t;
+} command_stack_t;
 
-typedef struct future_queue {
-  struct command *front;
-  struct command *back;
-} future_queue_t;
+command_stack_t *init_command_stack(void);
 
-future_queue_t *init_future_queue(void);
-
-history_stack_t *init_history_stack(void);
-
-void destroy_future_queue(future_queue_t *fq);
-
-void destroy_history_stack(history_stack_t *hs);
+void destroy_command_stack(command_stack_t *cs);
 
 command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
-command_t *append_command(history_stack_t *hs, command_t *c);
+bool is_nav_command(command_t *c);
 
-command_t *pop_command(history_stack_t *hs);
+command_t *append_command(command_stack_t *cs, command_t *c);
 
-command_t *queue_command(future_queue_t *fq, command_t *c);
+command_t *pop_command(command_stack_t *cs);
 
 #endif

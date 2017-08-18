@@ -1,44 +1,26 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 #include "commands.h"
 #include "controller.h"
 
-history_stack_t *init_history_stack(void) {
-  history_stack_t *hs = malloc(sizeof(history_stack_t));
-  hs->top = NULL;
-  hs->bottom = NULL;
+command_stack_t *init_command_stack(void) {
+  command_stack_t *cs = malloc(sizeof(command_stack_t));
+  cs->top = NULL;
+  cs->bottom = NULL;
 
-  return hs;
+  return cs;
 }
 
-future_queue_t *init_future_queue(void) {
-  future_queue_t *fq = malloc(sizeof(future_queue_t));
-  fq->front = NULL;
-  fq->back = NULL;
-
-  return fq;
-}
-
-void destroy_history_stack(history_stack_t *hs) {
-  command_t *c = hs->bottom, *tmp;
+void destroy_command_stack(command_stack_t *cs) {
+  command_t *c = cs->bottom, *tmp;
 
   while (c) {
     tmp = c;
     c = c->next;
     free(tmp);
   }
-  free(hs);
-}
-
-void destroy_future_queue(future_queue_t *fq) {
-  command_t *c = fq->front, *tmp;
-
-  while (c) {
-    tmp = c;
-    c = c->next;
-    free(tmp);
-  }
-  free(fq);
+  free(cs);
 }
 
 command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
@@ -50,68 +32,53 @@ command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   return c;
 }
 
+bool is_nav_command(command_t *c) {
+  COMMAND_TYPE t = c->type;
+  return t == HANDLE_MOVE || t == HANDLE_MOVE_TO_EDGE;
+}
+
 // -------------------------
 // -- History Stack methods
 // -------------------------
-command_t *append_command(history_stack_t *hs, command_t *c) {
+command_t *append_command(command_stack_t *cs, command_t *c) {
   // assert valid state
-  assert((!hs->top && !hs->bottom) || (hs->top && hs->bottom));
-
-  // when hs is empty
-  if (!hs->top && !hs->bottom) {
-    hs->top = c;
-    hs->bottom = c;
-    return c;
-  }
-
-  c->prev = hs->top;
-  hs->top->next = c;
-  hs->top = c;
-  return c;
-}
-
-command_t *pop_command(history_stack_t *hs) {
-  assert((!hs->top && !hs->bottom) || (hs->top && hs->bottom));
-
-  if (!hs->top && !hs->bottom) {
-    return NULL;
-  }
-
-  command_t *popped = hs->top;
-
-  // if there is only one command in stack
-  if (popped->prev == NULL) {
-    hs->top = NULL;
-    hs->bottom = NULL;
-    return popped;
-  }
-
-  hs->top = popped->prev;
-  popped->prev->next = NULL;
-  popped->prev = NULL;
-  return popped;
-}
-
-
-// -------------------------
-// -- Future Queue methods
-// -------------------------
-command_t *queue_command(future_queue_t *fq, command_t *c) {
-  assert((!fq->front && !fq->back) || (fq->front && fq->back));
+  assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
 
   if (!c) {
     return NULL;
   }
 
-  if (!fq->front && !fq->back) {
-    fq->front = c;
-    fq->back = c;
+  // when cs is empty
+  if (!cs->top && !cs->bottom) {
+    cs->top = c;
+    cs->bottom = c;
     return c;
   }
 
-  c->prev = fq->back;
-  fq->back->next = c;
-  fq->back = c;
-
+  c->prev = cs->top;
+  cs->top->next = c;
+  cs->top = c;
   return c;
+}
+
+command_t *pop_command(command_stack_t *cs) {
+  assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
+
+  if (!cs->top && !cs->bottom) {
+    return NULL;
+  }
+
+  command_t *popped = cs->top;
+
+  // if there is only one command in stack
+  if (popped->prev == NULL) {
+    cs->top = NULL;
+    cs->bottom = NULL;
+    return popped;
+  }
+
+  cs->top = popped->prev;
+  popped->prev->next = NULL;
+  popped->prev = NULL;
+  return popped;
 }

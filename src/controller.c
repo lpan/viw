@@ -185,7 +185,7 @@ static void dispatch_command(state_t *st, command_t *c) {
 }
 
 void replay_history(state_t *st) {
-  history_stack_t *hs = st->hs;
+  command_stack_t *hs = st->hs;
   command_t *c = hs->bottom;
 
   // TODO copy init buffer but not reconstruct it
