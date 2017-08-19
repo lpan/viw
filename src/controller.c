@@ -223,21 +223,32 @@ void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
 }
 
 /*
- * 1. pop history stack
- * 2. push the result from 1. to redo stack
- * 3. Repeat step 1 if necessary
- * 4. replay_history()
+ * LOL imperative programming sucks
+ *
+ * 1. pop history stack and push the result to the redo stack
+ * 2. if the command is a nav command, keep popping until a mutation command is
+ *    encountered (go to step 5) or the stack is empty (go to step 4).
+ * 3. if the command is a mode changing command that changes the buffer from
+ *    insert mode to normal mode, keep popping until we hit another mode
+ *    changing command (as we want to undo all changes performed in insert mode
+ *    at once)
+ * 4. if the command is empty, we know that all commands that were previously in
+ *    the history stack are nav commands, we want to add them back and abort the
+ *    operation.
+ * 5. replay the resulting history stack against the initial buffer.
  */
 void undo_command(state_t *st) {
+  // 1
   command_t *c = pop_command(st->hs);
   append_command(st->rs, c);
 
-  // we only want to undo buffer-mutating commands
+  // 2
   while (c && is_nav_command(c)) {
     c = pop_command(st->hs);
     append_command(st->rs, c);
   }
 
+  // 3
   if (c && is_to_normal_command(c)) {
     // we are confident that there is a to-insert-command somewhere in the
     // history stack
@@ -247,8 +258,7 @@ void undo_command(state_t *st) {
     }
   }
 
-  // if loop exits because stack is empty, we want to go back to the nearest
-  // buffer-mutating command
+  // 4
   if (!c) {
     c = pop_command(st->rs);
     append_command(st->hs, c);
@@ -262,6 +272,7 @@ void undo_command(state_t *st) {
     }
   }
 
+  // 5
   replay_history(st);
   st->to_refresh = true;
 }
