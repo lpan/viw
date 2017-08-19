@@ -9,9 +9,9 @@
 #include "commands.h"
 #include "controller.h"
 
-// -----------
-// Mutations
-// -----------
+// ------------------------------
+// Mutations modeled as commands
+// ------------------------------
 void handle_move(state_t *st, DIRECTION d) {
   move_current(st->buf, d);
 }
@@ -50,13 +50,11 @@ void handle_insert_char(state_t *st, char c) {
 void handle_append_row(state_t *st) {
   append_row(st->buf, NULL);
   st->to_refresh = true;
-  st->buf->mode = INSERT_BACK;
 }
 
 void handle_prepend_row(state_t *st) {
   prepend_row(st->buf, NULL);
   st->to_refresh = true;
-  st->buf->mode = INSERT_BACK;
 }
 
 void handle_delete_char(state_t *st) {
@@ -141,6 +139,13 @@ void handle_backspace(state_t *st) {
   }
 }
 
+void handle_mode_change(state_t *st, MODE m) {
+  st->buf->mode = m;
+}
+
+// ---------
+// Helpers
+// ---------
 void set_prev_key(state_t *st, char c) {
   st->prev_key = c;
 }
@@ -180,6 +185,9 @@ static void dispatch_command(state_t *st, command_t *c) {
       break;
     case HANDLE_BACKSPACE:
       handle_backspace(st);
+      break;
+    case HANDLE_MODE_CHANGE:
+      handle_mode_change(st, c->payload.m);
       break;
   }
 }

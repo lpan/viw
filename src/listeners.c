@@ -87,21 +87,27 @@ void start_normal_listener(state_t *st) {
       apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'i':
       if (st->buf->current->line_size == 0) {
-        st->buf->mode = INSERT_BACK;
+        p.m = INSERT_BACK;
       } else {
-        st->buf->mode = INSERT_FRONT;
+        p.m = INSERT_FRONT;
       }
+      apply_command(st, HANDLE_MODE_CHANGE, p);
       break;
     case 'A':
       p.d = RIGHT;
       apply_command(st, HANDLE_MOVE_TO_EDGE, p);
     case 'a':
-      st->buf->mode = INSERT_BACK;
+      p.m = INSERT_BACK;
+      apply_command(st, HANDLE_MODE_CHANGE, p);
       break;
     case 'o':
+      p.m = INSERT_BACK;
+      apply_command(st, HANDLE_MODE_CHANGE, p);
       apply_command(st, HANDLE_APPEND_ROW, p);
       break;
     case 'O':
+      p.m = INSERT_BACK;
+      apply_command(st, HANDLE_MODE_CHANGE, p);
       apply_command(st, HANDLE_PREPEND_ROW, p);
       break;
     case 'u':
@@ -143,22 +149,22 @@ void start_ex_listener(state_t *st) {
 
 void start_insert_listener(state_t *st) {
   int ch = getch();
+  COMMAND_PAYLOAD p;
+
   switch (ch) {
     case '\n':
-      handle_enter(st);
+      apply_command(st, HANDLE_ENTER, p);
       break;
     case KEY_BACKSPACE:
-      handle_backspace(st);
+      apply_command(st, HANDLE_BACKSPACE, p);
       break;
     case KEY_ESC:
-      if (st->buf->mode == INSERT_FRONT) {
-        handle_move(st, LEFT);
-      }
-
-      st->buf->mode = NORMAL;
+      p.m = NORMAL;
+      apply_command(st, HANDLE_MODE_CHANGE, p);
       break;
     default:
-      handle_insert_char(st, (char) ch);
+      p.c = (char) ch;
+      apply_command(st, HANDLE_INSERT_CHAR, p);
       break;
   }
 }
