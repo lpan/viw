@@ -32,6 +32,6 @@ void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
 void undo_command(state_t *st);
 
-void replay_history(state_t *st);
+void redo_command(state_t *st);
 
 #endif

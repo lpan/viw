@@ -192,7 +192,7 @@ static void dispatch_command(state_t *st, command_t *c) {
   }
 }
 
-void replay_history(state_t *st) {
+static void replay_history(state_t *st) {
   command_stack_t *hs = st->hs;
   command_t *c = hs->bottom;
 
