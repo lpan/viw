@@ -32,9 +32,24 @@ command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   return c;
 }
 
+// TODO maybe add a group prop to command?
 bool is_nav_command(command_t *c) {
   COMMAND_TYPE t = c->type;
   return t == HANDLE_MOVE || t == HANDLE_MOVE_TO_EDGE;
+}
+
+static bool is_mode_change_command(command_t *c) {
+  return c->type == HANDLE_MODE_CHANGE;
+}
+
+bool is_to_normal_command(command_t *c) {
+  return is_mode_change_command(c) && c->payload.m == NORMAL;
+}
+
+// commands triggers NORMAL -> INSERT_FRONT or INSERT_BACK
+bool is_to_insert_command(command_t *c) {
+  COMMAND_PAYLOAD p = c->payload;
+  return is_mode_change_command(c) && (p.m == INSERT_FRONT || p.m == INSERT_BACK);
 }
 
 // -------------------------

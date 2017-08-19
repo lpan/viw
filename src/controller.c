@@ -238,6 +238,15 @@ void undo_command(state_t *st) {
     append_command(st->rs, c);
   }
 
+  if (c && is_to_normal_command(c)) {
+    // we are confident that there is a to-insert-command somewhere in the
+    // history stack
+    while (!is_to_insert_command(c)) {
+      c = pop_command(st->hs);
+      append_command(st->rs, c);
+    }
+  }
+
   // if loop exits because stack is empty, we want to go back to the nearest
   // buffer-mutating command
   if (!c) {

@@ -43,6 +43,10 @@ command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
 bool is_nav_command(command_t *c);
 
+bool is_to_normal_command(command_t *c);
+
+bool is_to_insert_command(command_t *c);
+
 command_t *append_command(command_stack_t *cs, command_t *c);
 
 command_t *pop_command(command_stack_t *cs);
