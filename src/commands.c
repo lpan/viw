@@ -94,6 +94,33 @@ command_t *pop_command(command_stack_t *cs) {
 
   cs->top = popped->prev;
   popped->prev->next = NULL;
+
+  // clear popped links
   popped->prev = NULL;
+  return popped;
+}
+
+// not a stack anymore LOL
+command_t *shift_command(command_stack_t *cs) {
+  assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
+
+  if (!cs->top && !cs->bottom) {
+    return NULL;
+  }
+
+  command_t *popped = cs->bottom;
+
+  // if there is only one command in stack
+  if (popped->next == NULL) {
+    cs->top = NULL;
+    cs->bottom = NULL;
+    return popped;
+  }
+
+  cs->bottom = popped->next;
+  popped->next->prev = NULL;
+
+  // clear popped links
+  popped->next = NULL;
   return popped;
 }

@@ -113,6 +113,9 @@ void start_normal_listener(state_t *st) {
     case 'u':
       undo_command(st);
       break;
+    case 'r':
+      redo_command(st);
+      break;
     case ':':
       st->buf->mode = EX;
       clear_row(st->status_row);

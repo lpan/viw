@@ -276,3 +276,54 @@ void undo_command(state_t *st) {
   replay_history(st);
   st->to_refresh = true;
 }
+
+static void sanitize_redo_stack(state_t *st) {
+  command_t *tmp, *c = st->rs->bottom;
+  if (!c) {
+    return;
+  }
+
+  if (!is_nav_command(c)) {
+    return;
+  }
+
+  while (c && is_nav_command(c)) {
+    tmp = c;
+    c = c->next;
+    free(tmp);
+  }
+}
+
+/*
+ * 1. pop redo stack and append it to history stack
+ */
+void redo_command(state_t *st) {
+  sanitize_redo_stack(st);
+
+  command_t *c = pop_command(st->rs);
+  append_command(st->hs, c);
+
+  if (c) {
+    dispatch_command(st, c);
+  }
+
+  while (c && is_nav_command(c)) {
+    c = pop_command(st->rs);
+    append_command(st->hs, c);
+    dispatch_command(st, c);
+  }
+
+  if (c && is_to_insert_command(c)) {
+    while (!is_to_normal_command(c)) {
+      c = pop_command(st->rs);
+      append_command(st->hs, c);
+      dispatch_command(st, c);
+    }
+  }
+
+  if (!c) {
+    return;
+  }
+
+  st->to_refresh = true;
+}

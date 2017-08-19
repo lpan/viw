@@ -51,4 +51,6 @@ command_t *append_command(command_stack_t *cs, command_t *c);
 
 command_t *pop_command(command_stack_t *cs);
 
+command_t *shift_command(command_stack_t *cs);
+
 #endif

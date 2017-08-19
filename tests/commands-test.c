@@ -56,7 +56,6 @@ static void test_command_stack(void) {
   assert(c2->next == NULL);
   assert(c3->prev == NULL);
   assert(c3->next == NULL);
-  free(tmp);
 
   tmp = pop_command(cs);
   assert(tmp == c2);
@@ -66,7 +65,6 @@ static void test_command_stack(void) {
   assert(c1->next == NULL);
   assert(c2->prev == NULL);
   assert(c2->next == NULL);
-  free(tmp);
 
   tmp = pop_command(cs);
   assert(tmp == c1);
@@ -74,8 +72,48 @@ static void test_command_stack(void) {
   assert(cs->bottom == NULL);
   assert(c1->prev == NULL);
   assert(c1->next == NULL);
-  free(tmp);
 
+
+  append_command(cs, c1);
+  append_command(cs, c2);
+  append_command(cs, c3);
+
+  tmp = shift_command(cs);
+  assert(tmp == c1);
+  assert(cs->top == c3);
+  assert(cs->bottom == c2);
+  assert(c1->prev == NULL);
+  assert(c1->next == NULL);
+  assert(c2->prev == NULL);
+  assert(c2->next == c3);
+  assert(c3->prev == c2);
+  assert(c3->next == NULL);
+
+  tmp = shift_command(cs);
+  assert(tmp == c2);
+  assert(cs->top == c3);
+  assert(cs->bottom == c3);
+  assert(c1->prev == NULL);
+  assert(c1->next == NULL);
+  assert(c2->prev == NULL);
+  assert(c2->next == NULL);
+  assert(c3->prev == NULL);
+  assert(c3->next == NULL);
+
+  tmp = shift_command(cs);
+  assert(tmp == c3);
+  assert(cs->top == NULL);
+  assert(cs->bottom == NULL);
+  assert(c1->prev == NULL);
+  assert(c1->next == NULL);
+  assert(c2->prev == NULL);
+  assert(c2->next == NULL);
+  assert(c3->prev == NULL);
+  assert(c3->next == NULL);
+
+  free(c1);
+  free(c2);
+  free(c3);
   destroy_command_stack(cs);
 }
 
