@@ -32,7 +32,7 @@ $ ./viw [filename]
 - `j` Cursor down
 - `k` Cursor up
 - `h` Cursor left
-- `l` Curosr right
+- `l` Cursor right
 - `0` Cursor to the beginning of the line
 - `$` Cursor to the end of the line
 - `i` Insert before
