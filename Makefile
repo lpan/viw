@@ -1,13 +1,13 @@
 CC=gcc
 FLAGS=--std=gnu11 -lncurses
 
+build:
+	@$(CC) src/*.c -o viw $(FLAGS)
+
 run:
 	@$(MAKE) build
 	@./viw test.txt
 	@rm viw
-
-build:
-	@$(CC) src/*.c -o viw $(FLAGS)
 
 clean:
 	rm -f viw *~
