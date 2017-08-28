@@ -36,3 +36,4 @@ vgcore.*
 # Debug files
 *.dSYM/
 *.su
+compile_commands.json
