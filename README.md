@@ -11,7 +11,7 @@ https://vimeo.com/205701269
 * gcc
 * ncurses
 
-```bash
+```console
 # Fedora
 sudo dnf install ncurses-devel
 
@@ -20,11 +20,18 @@ sudo apt-get install libncurses5-dev
 ```
 
 ## Installation & usage
-```bash
+```console
 $ git clone https://github.com/lpan/viw
 $ cd viw/
 $ make build
 $ ./viw [filename]
+```
+
+Using mingw compiler on Windows, you need to install `mingw-w64-x86_64-ncurses`
+
+```console
+$ pacman -S mingw-w64-x86_64-ncurses
+$ mingw32-make build
 ```
 
 ### Supported keybindings

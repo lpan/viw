@@ -1,8 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <assert.h>
 #include <string.h>
 #include "buffer.h"
+
+#ifdef _WIN32
+int getline(char **lp, size_t *n, FILE *fp) {
+  char buf[BUFSIZ];
+  char *p;
+  size_t len;
+
+  if (lp == NULL || n == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (ferror (fp) || feof(fp))
+    return -1;
+
+  buf[0] = '\0';
+  fgets(buf, BUFSIZ, fp);
+  p = strchr(buf, '\n');
+  if (p) *p = '\0';
+  len = strlen(buf);
+
+  if (len < BUFSIZ-1) {
+    p = realloc(*lp, BUFSIZ);
+    if (p == NULL) return -1;
+    *lp = p;
+    *n = BUFSIZ;
+  }
+
+  strcpy(*lp, buf);
+  return len;
+}
+#endif
 
 /*
  * Read file to buffer
