@@ -79,6 +79,24 @@ Feel free to contribute! :)
     the result from `update_state()`.
 4. Goto step 2
 
+### Undo & Redo
+
+Viw's undo & redo functionality is inspired by the `command pattern` and `event sourcing`.
+It is hacky but it works and it is not that slow.
+1. Initialization:
+    * Deep clone the initial buffer.
+    * Initialize two stacks (`history stack` and `redo stack`).
+2. Capture all state-mutating functions and their payloads and push it on to the
+   `history stack`.
+3. When the user hits `undo`:
+    * Pop the `history stack` and the push the result onto `redo stack`.
+    * Clone the initial buffer and apply all the commands saved in the `history stack`
+     on top of it.
+4. When the user hits `redo`:
+    * Pop the `redo stack` and apply the command immediately onto the current buffer.
+5. Clear the `redo stack` when a command gets pushed to the `history stack` by the user.
+
+See https://github.com/lpan/viw/blob/master/src/controller.c#L152 for more details
 
 ### Hierarchy of the states
 
