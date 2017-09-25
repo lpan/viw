@@ -52,6 +52,8 @@ mingw32-make build
 - `dd` Delete line under the cursor
 - `gg` Go to the first line of the file
 - `G` Go the last line of the file
+- `u` Undo
+- `r` Redo (**Unstable**)
 
 ### Supported EX mode commands
 - `:q` quit
