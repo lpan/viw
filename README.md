@@ -20,18 +20,19 @@ sudo apt-get install libncurses5-dev
 ```
 
 ## Installation & usage
+
 ```console
-$ git clone https://github.com/lpan/viw
-$ cd viw/
-$ make build
-$ ./viw [filename]
+git clone https://github.com/lpan/viw
+cd viw/
+make build
+./viw [filename]
 ```
 
 Using mingw compiler on Windows, you need to install `mingw-w64-x86_64-ncurses`
 
 ```console
-$ pacman -S mingw-w64-x86_64-ncurses
-$ mingw32-make build
+pacman -S mingw-w64-x86_64-ncurses
+mingw32-make build
 ```
 
 ### Supported keybindings
@@ -75,6 +76,7 @@ Feel free to contribute! :)
   - `render_update(state_t *st)` will actually render everything on the screen according to
     the result from `update_state()`.
 4. Goto step 2
+
 
 ### Hierarchy of the states
 
