@@ -20,18 +20,19 @@ sudo apt-get install libncurses5-dev
 ```
 
 ## Installation & usage
+
 ```console
-$ git clone https://github.com/lpan/viw
-$ cd viw/
-$ make build
-$ ./viw [filename]
+git clone https://github.com/lpan/viw
+cd viw/
+make build
+./viw [filename]
 ```
 
 Using mingw compiler on Windows, you need to install `mingw-w64-x86_64-ncurses`
 
 ```console
-$ pacman -S mingw-w64-x86_64-ncurses
-$ mingw32-make build
+pacman -S mingw-w64-x86_64-ncurses
+mingw32-make build
 ```
 
 ### Supported keybindings
@@ -51,6 +52,8 @@ $ mingw32-make build
 - `dd` Delete line under the cursor
 - `gg` Go to the first line of the file
 - `G` Go the last line of the file
+- `u` Undo
+- `r` Redo (**Unstable**)
 
 ### Supported EX mode commands
 - `:q` quit
@@ -75,6 +78,25 @@ Feel free to contribute! :)
   - `render_update(state_t *st)` will actually render everything on the screen according to
     the result from `update_state()`.
 4. Goto step 2
+
+### Undo & Redo
+
+Viw's undo & redo functionality is inspired by the `command pattern` and `event sourcing`.
+It is hacky but it works and it is not that slow.
+1. Initialization:
+    * Deep clone the initial buffer.
+    * Initialize two stacks (`history stack` and `redo stack`).
+2. Capture all state-mutating functions and their payloads and push it on to the
+   `history stack`.
+3. When the user hits `undo`:
+    * Pop the `history stack` and the push the result onto `redo stack`.
+    * Clone the initial buffer and apply all the commands saved in the `history stack`
+     on top of it.
+4. When the user hits `redo`:
+    * Pop the `redo stack` and apply the command immediately onto the current buffer.
+5. Clear the `redo stack` when a command gets pushed to the `history stack` by the user.
+
+See https://github.com/lpan/viw/blob/master/src/controller.c#L152 for more details
 
 ### Hierarchy of the states
 
