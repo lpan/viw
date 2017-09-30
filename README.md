@@ -81,8 +81,7 @@ Feel free to contribute! :)
 
 ### Undo & Redo
 
-Viw's undo & redo functionality is inspired by the `command pattern` and `event sourcing`.
-It is hacky but it works and it is not that slow.
+Viw's undo & redo functionality is based on the [state machine replication principle](https://en.wikipedia.org/wiki/State_machine_replication)
 1. Initialization:
     * Deep clone the initial buffer.
     * Initialize two stacks (`history stack` and `redo stack`).
