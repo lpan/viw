@@ -12,13 +12,15 @@ typedef enum COMMAND_TYPE {
   HANDLE_DELETE_CHAR,
   HANDLE_DELETE_ROW,
   HANDLE_ENTER,
-  HANDLE_BACKSPACE
+  HANDLE_BACKSPACE,
+  HANDLE_MODE_CHANGE
 } COMMAND_TYPE;
 
 typedef union COMMAND_PAYLOAD {
   char c;
   char* line;
   DIRECTION d;
+  MODE m;
 } COMMAND_PAYLOAD;
 
 typedef struct command {
@@ -41,8 +43,14 @@ command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
 bool is_nav_command(command_t *c);
 
+bool is_to_normal_command(command_t *c);
+
+bool is_to_insert_command(command_t *c);
+
 command_t *append_command(command_stack_t *cs, command_t *c);
 
 command_t *pop_command(command_stack_t *cs);
+
+command_t *shift_command(command_stack_t *cs);
 
 #endif

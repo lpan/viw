@@ -32,9 +32,24 @@ command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   return c;
 }
 
+// TODO maybe add a group prop to command?
 bool is_nav_command(command_t *c) {
   COMMAND_TYPE t = c->type;
   return t == HANDLE_MOVE || t == HANDLE_MOVE_TO_EDGE;
+}
+
+static bool is_mode_change_command(command_t *c) {
+  return c->type == HANDLE_MODE_CHANGE;
+}
+
+bool is_to_normal_command(command_t *c) {
+  return is_mode_change_command(c) && c->payload.m == NORMAL;
+}
+
+// commands triggers NORMAL -> INSERT_FRONT or INSERT_BACK
+bool is_to_insert_command(command_t *c) {
+  COMMAND_PAYLOAD p = c->payload;
+  return is_mode_change_command(c) && (p.m == INSERT_FRONT || p.m == INSERT_BACK);
 }
 
 // -------------------------
@@ -79,6 +94,33 @@ command_t *pop_command(command_stack_t *cs) {
 
   cs->top = popped->prev;
   popped->prev->next = NULL;
+
+  // clear popped links
   popped->prev = NULL;
+  return popped;
+}
+
+// not a stack anymore LOL
+command_t *shift_command(command_stack_t *cs) {
+  assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
+
+  if (!cs->top && !cs->bottom) {
+    return NULL;
+  }
+
+  command_t *popped = cs->bottom;
+
+  // if there is only one command in stack
+  if (popped->next == NULL) {
+    cs->top = NULL;
+    cs->bottom = NULL;
+    return popped;
+  }
+
+  cs->bottom = popped->next;
+  popped->next->prev = NULL;
+
+  // clear popped links
+  popped->next = NULL;
   return popped;
 }

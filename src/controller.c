@@ -9,9 +9,9 @@
 #include "commands.h"
 #include "controller.h"
 
-// -----------
-// Mutations
-// -----------
+// ------------------------------
+// Mutations modeled as commands
+// ------------------------------
 void handle_move(state_t *st, DIRECTION d) {
   move_current(st->buf, d);
 }
@@ -50,13 +50,11 @@ void handle_insert_char(state_t *st, char c) {
 void handle_append_row(state_t *st) {
   append_row(st->buf, NULL);
   st->to_refresh = true;
-  st->buf->mode = INSERT_BACK;
 }
 
 void handle_prepend_row(state_t *st) {
   prepend_row(st->buf, NULL);
   st->to_refresh = true;
-  st->buf->mode = INSERT_BACK;
 }
 
 void handle_delete_char(state_t *st) {
@@ -141,6 +139,13 @@ void handle_backspace(state_t *st) {
   }
 }
 
+void handle_mode_change(state_t *st, MODE m) {
+  st->buf->mode = m;
+}
+
+// ---------
+// Helpers
+// ---------
 void set_prev_key(state_t *st, char c) {
   st->prev_key = c;
 }
@@ -181,10 +186,13 @@ static void dispatch_command(state_t *st, command_t *c) {
     case HANDLE_BACKSPACE:
       handle_backspace(st);
       break;
+    case HANDLE_MODE_CHANGE:
+      handle_mode_change(st, c->payload.m);
+      break;
   }
 }
 
-void replay_history(state_t *st) {
+static void replay_history(state_t *st) {
   command_stack_t *hs = st->hs;
   command_t *c = hs->bottom;
 
@@ -215,23 +223,42 @@ void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
 }
 
 /*
- * 1. pop history stack
- * 2. push the result from 1. to redo stack
- * 3. Repeat step 1 if necessary
- * 4. replay_history()
+ * LOL imperative programming sucks
+ *
+ * 1. pop history stack and push the result to the redo stack
+ * 2. if the command is a nav command, keep popping until a mutation command is
+ *    encountered (go to step 5) or the stack is empty (go to step 4).
+ * 3. if the command is a mode changing command that changes the buffer from
+ *    insert mode to normal mode, keep popping until we hit another mode
+ *    changing command (as we want to undo all changes performed in insert mode
+ *    at once)
+ * 4. if the command is empty, we know that all commands that were previously in
+ *    the history stack are nav commands, we want to add them back and abort the
+ *    operation.
+ * 5. replay the resulting history stack against the initial buffer.
  */
 void undo_command(state_t *st) {
+  // 1
   command_t *c = pop_command(st->hs);
   append_command(st->rs, c);
 
-  // we only want to undo buffer-mutating commands
+  // 2
   while (c && is_nav_command(c)) {
     c = pop_command(st->hs);
     append_command(st->rs, c);
   }
 
-  // if loop exits because stack is empty, we want to go back to the nearest
-  // buffer-mutating command
+  // 3
+  if (c && is_to_normal_command(c)) {
+    // we are confident that there is a to-insert-command somewhere in the
+    // history stack
+    while (!is_to_insert_command(c)) {
+      c = pop_command(st->hs);
+      append_command(st->rs, c);
+    }
+  }
+
+  // 4
   if (!c) {
     c = pop_command(st->rs);
     append_command(st->hs, c);
@@ -245,6 +272,58 @@ void undo_command(state_t *st) {
     }
   }
 
+  // 5
   replay_history(st);
+  st->to_refresh = true;
+}
+
+static void sanitize_redo_stack(state_t *st) {
+  command_t *tmp, *c = st->rs->bottom;
+  if (!c) {
+    return;
+  }
+
+  if (!is_nav_command(c)) {
+    return;
+  }
+
+  while (c && is_nav_command(c)) {
+    tmp = c;
+    c = c->next;
+    free(tmp);
+  }
+}
+
+/*
+ * 1. pop redo stack and append it to history stack
+ */
+void redo_command(state_t *st) {
+  sanitize_redo_stack(st);
+
+  command_t *c = pop_command(st->rs);
+  append_command(st->hs, c);
+
+  if (c) {
+    dispatch_command(st, c);
+  }
+
+  while (c && is_nav_command(c)) {
+    c = pop_command(st->rs);
+    append_command(st->hs, c);
+    dispatch_command(st, c);
+  }
+
+  if (c && is_to_insert_command(c)) {
+    while (!is_to_normal_command(c)) {
+      c = pop_command(st->rs);
+      append_command(st->hs, c);
+      dispatch_command(st, c);
+    }
+  }
+
+  if (!c) {
+    return;
+  }
+
   st->to_refresh = true;
 }
