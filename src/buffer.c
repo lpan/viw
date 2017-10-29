@@ -525,6 +525,7 @@ void clear_row(row_t *r) {
 
   r->last = r->head;
   r->current = r->head;
+  r->head = NULL;
   r->line_size = 0;
 }
 
