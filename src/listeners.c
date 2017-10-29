@@ -35,18 +35,22 @@ void start_normal_listener(state_t *st) {
 
   switch (ch) {
     case 'j':
+    case KEY_DOWN:
       p.d = DOWN;
       apply_command(st, HANDLE_MOVE, p);
       break;
     case 'k':
+    case KEY_UP:
       p.d = UP;
       apply_command(st, HANDLE_MOVE, p);
       break;
     case 'h':
+    case KEY_LEFT:
       p.d = LEFT;
       apply_command(st, HANDLE_MOVE, p);
       break;
     case 'l':
+    case KEY_RIGHT:
       p.d = RIGHT;
       apply_command(st, HANDLE_MOVE, p);
       break;
