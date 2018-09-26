@@ -4,15 +4,15 @@
 #include "commands.h"
 #include "controller.h"
 
-command_stack_t *init_command_stack(void) {
-  command_stack_t *cs = malloc(sizeof(command_stack_t));
+command_log_t *init_command_log(void) {
+  command_log_t *cs = malloc(sizeof(command_log_t));
   cs->top = NULL;
   cs->bottom = NULL;
 
   return cs;
 }
 
-void destroy_command_stack(command_stack_t *cs) {
+void destroy_command_log(command_log_t *cs) {
   command_t *c = cs->bottom, *tmp;
 
   while (c) {
@@ -37,10 +37,7 @@ bool is_nav_command(command_t *c) {
   return t == HANDLE_MOVE || t == HANDLE_MOVE_TO_EDGE;
 }
 
-// -------------------------
-// -- History Stack methods
-// -------------------------
-command_t *append_command(command_stack_t *cs, command_t *c) {
+command_t *append_command(command_log_t *cs, command_t *c) {
   // assert valid state
   assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
 
@@ -61,7 +58,7 @@ command_t *append_command(command_stack_t *cs, command_t *c) {
   return c;
 }
 
-command_t *pop_command(command_stack_t *cs) {
+command_t *pop_command(command_log_t *cs) {
   assert((!cs->top && !cs->bottom) || (cs->top && cs->bottom));
 
   if (!cs->top && !cs->bottom) {

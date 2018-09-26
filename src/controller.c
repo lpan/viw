@@ -185,7 +185,7 @@ static void dispatch_command(state_t *st, command_t *c) {
 }
 
 void replay_history(state_t *st) {
-  command_stack_t *hs = st->hs;
+  command_log_t *hs = st->hs;
   command_t *c = hs->bottom;
 
   // TODO copy init buffer but not reconstruct it
@@ -210,8 +210,8 @@ void apply_command(state_t *st, COMMAND_TYPE t, COMMAND_PAYLOAD p) {
   dispatch_command(st, c);
 
   // FIXME kill this when implemented redo
-  destroy_command_stack(st->rs);
-  st->rs = init_command_stack();
+  destroy_command_log(st->rs);
+  st->rs = init_command_log();
 }
 
 /*

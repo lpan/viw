@@ -28,21 +28,21 @@ typedef struct command {
   struct command *prev;
 } command_t;
 
-typedef struct command_stack {
+typedef struct command_log {
   struct command *bottom;
   struct command *top;
-} command_stack_t;
+} command_log_t;
 
-command_stack_t *init_command_stack(void);
+command_log_t *init_command_log(void);
 
-void destroy_command_stack(command_stack_t *cs);
+void destroy_command_log(command_log_t *);
 
 command_t *init_command(COMMAND_TYPE t, COMMAND_PAYLOAD p);
 
-bool is_nav_command(command_t *c);
+bool is_nav_command(command_t *);
 
-command_t *append_command(command_stack_t *cs, command_t *c);
+command_t *append_command(command_log_t *cs, command_t *c);
 
-command_t *pop_command(command_stack_t *cs);
+command_t *pop_command(command_log_t *cs);
 
 #endif

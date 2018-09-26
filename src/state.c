@@ -15,9 +15,9 @@ state_t *init_state(const char *filename) {
   st->scr = init_screen(LINES);
 
   // history stack
-  st->hs = init_command_stack();
+  st->hs = init_command_log();
   // redo stack
-  st->rs = init_command_stack();
+  st->rs = init_command_log();
 
   st->status_row = init_row(NULL);
   st->prev_key = '\0';
@@ -31,8 +31,8 @@ void destroy_state(state_t *st) {
   destroy_buffer(st->buf);
   destroy_screen(st->scr);
   destroy_row(st->status_row);
-  destroy_command_stack(st->hs);
-  destroy_command_stack(st->rs);
+  destroy_command_log(st->hs);
+  destroy_command_log(st->rs);
   free(st);
 }
 

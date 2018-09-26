@@ -12,8 +12,8 @@ typedef struct state {
   buffer_t *buf;
   screen_t *scr;
 
-  command_stack_t *hs;
-  command_stack_t *rs;
+  command_log_t *hs;
+  command_log_t *rs;
 
   size_t cx, cy;
   size_t top_row;
