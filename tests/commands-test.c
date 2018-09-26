@@ -4,8 +4,8 @@
 
 #include "../src/commands.h"
 
-static void test_command_stack(void) {
-  command_stack_t *cs = init_command_stack();
+static void test_command_log(void) {
+  command_log_t *cs = init_command_log();
   COMMAND_PAYLOAD p;
 
   COMMAND_TYPE t1 = HANDLE_APPEND_ROW;
@@ -76,11 +76,11 @@ static void test_command_stack(void) {
   assert(c1->next == NULL);
   free(tmp);
 
-  destroy_command_stack(cs);
+  destroy_command_log(cs);
 }
 
 int main(void) {
-  test_command_stack();
+  test_command_log();
 
   return 0;
 }
